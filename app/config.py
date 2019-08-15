@@ -1,13 +1,14 @@
+import os
 from flask_env import MetaFlaskEnv
 
 
 class Config(metaclass=MetaFlaskEnv):
-    DEBUG = False
+    DEBUG = os.getenv("DEBUG", False)
 
-    SECRET_KEY = None
-    AUTH_TOKENS = None
+    SECRET_KEY = os.getenv("SECRET_KEY", "secret-key")
+    AUTH_TOKENS = os.getenv("AUTH_TOKENS", "auth-token")
 
-    DOCUMENTS_BUCKET = None
+    DOCUMENTS_BUCKET = os.getenv("DOCUMENTS_BUCKET", "development-document-download")
 
     ALLOWED_MIME_TYPES = [
         'application/pdf',
@@ -17,16 +18,14 @@ class Config(metaclass=MetaFlaskEnv):
 
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024 + 1024
 
-    FRONTEND_HOSTNAME = None
+    HTTP_SCHEME = os.getenv("HTTP_SCHEME", "http")
+    FRONTEND_HOSTNAME = os.getenv("FRONTEND_HOSTNAME", "localhost:7001")
 
-    NOTIFY_APP_NAME = None
-    NOTIFY_LOG_PATH = 'application.log'
+    NOTIFY_APP_NAME = os.getenv("NOTIFY_APP_NAME", "Name")
+    NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH", "Name")
 
-    ANTIVIRUS_API_HOST = None
-    ANTIVIRUS_API_KEY = None
-
-    HTTP_SCHEME = 'https'
-    FRONTEND_HOSTNAME = None
+    ANTIVIRUS_API_HOST = os.getenv("ANTIVIRUS_API_HOST", "http://localhost:6016")
+    ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "application.log")
 
 
 class Test(Config):
@@ -49,34 +48,13 @@ class Test(Config):
 class Development(Config):
     DEBUG = True
 
-    SECRET_KEY = 'secret-key'
-    AUTH_TOKENS = 'auth-token'
-
-    DOCUMENTS_BUCKET = 'development-document-download'
-
-    ANTIVIRUS_API_HOST = 'http://localhost:6016'
-    ANTIVIRUS_API_KEY = 'test-key'
-
-    HTTP_SCHEME = 'http'
-    FRONTEND_HOSTNAME = 'localhost:7001'
-
-
-class Preview(Config):
-    DOCUMENTS_BUCKET = 'preview-document-download'
-
-
-class Staging(Config):
-    DOCUMENTS_BUCKET = 'staging-document-download'
-
 
 class Production(Config):
-    DOCUMENTS_BUCKET = 'production-document-download'
+    DEBUG = False
 
 
 configs = {
     'test': Test,
     'development': Development,
-    'preview': Preview,
-    'staging': Staging,
     'production': Production,
 }

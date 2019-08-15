@@ -6,3 +6,16 @@ __pycache__
 
 target/
 environment.sh
+
+# Mac
+*.DS_Store
+.envrc
+.env
+
+celerybeat-schedule
+
+# CloudFoundry
+.cf
+
+/scripts/run_my_tests.sh
+.vscode
