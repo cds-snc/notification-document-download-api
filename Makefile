@@ -7,9 +7,8 @@ run:
 	FLASK_APP=application.py FLASK_ENV=development flask run -p 7000
 
 .PHONY: test
-test: test-requirements
+test:
 	py.test --cov=app --cov-report=term-missing tests/
-	if [[ ! -z $$COVERALLS_REPO_TOKEN ]]; then coveralls; fi
 	flake8 .
 
 .PHONY: freeze-requirements
