@@ -8,7 +8,7 @@ class Config(metaclass=MetaFlaskEnv):
     SECRET_KEY = os.getenv("SECRET_KEY", "secret-key")
     AUTH_TOKENS = os.getenv("AUTH_TOKENS", "auth-token")
 
-    DOCUMENTS_BUCKET = os.getenv("DOCUMENTS_BUCKET", "development-document-download")
+    DOCUMENTS_BUCKET = os.getenv("DOCUMENTS_BUCKET", "development-notification-canada-ca-document-download")
 
     ALLOWED_MIME_TYPES = [
         'application/pdf',
@@ -22,7 +22,7 @@ class Config(metaclass=MetaFlaskEnv):
     FRONTEND_HOSTNAME = os.getenv("FRONTEND_HOSTNAME", "localhost:7001")
 
     NOTIFY_APP_NAME = os.getenv("NOTIFY_APP_NAME", "Name")
-    NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH", "Name")
+    NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH", "application.log")
 
     ANTIVIRUS_API_HOST = os.getenv("ANTIVIRUS_API_HOST", "http://localhost:6016")
     ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "application.log")
