@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request
 
-from app import document_store, antivirus_client
+from app import document_store
 from app.utils import get_mime_type
 from app.utils.antivirus import AntivirusError
 from app.utils.authentication import check_auth
