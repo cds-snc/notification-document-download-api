@@ -12,7 +12,8 @@ def store(mocker):
 
 @pytest.fixture
 def antivirus(mocker):
-    return mocker.patch('app.upload.views.antivirus_client')
+    # return mocker.patch('app.upload.views.antivirus_client')
+    return 
 
 
 def test_document_upload_returns_link_to_frontend(client, store, antivirus):
@@ -21,7 +22,7 @@ def test_document_upload_returns_link_to_frontend(client, store, antivirus):
         'encryption_key': bytes(32),
     }
 
-    antivirus.scan.return_value = True
+    # antivirus.scan.return_value = True
 
     response = client.post(
         '/services/00000000-0000-0000-0000-000000000000/documents',
@@ -36,7 +37,7 @@ def test_document_upload_returns_link_to_frontend(client, store, antivirus):
         'document': {
             'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
             'url': ''.join([
-                'http://document-download-frontend-test',
+                'http://localhost:7001',
                 '/d/AAAAAAAAAAAAAAAAAAAAAA',
                 '/_____________________w',
                 '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
@@ -51,7 +52,7 @@ def test_document_upload_returns_link_to_frontend(client, store, antivirus):
         'status': 'ok'
     }
 
-
+@pytest.mark.skip(reason="NO AV")
 def test_document_upload_virus_found(client, store, antivirus):
     antivirus.scan.return_value = False
 
@@ -68,7 +69,7 @@ def test_document_upload_virus_found(client, store, antivirus):
         'error': "Document didn't pass the virus scan"
     }
 
-
+@pytest.mark.skip(reason="NO AV")
 def test_document_upload_virus_scan_error(client, store, antivirus):
     antivirus.scan.side_effect = AntivirusError(503, 'connection error')
 
@@ -107,7 +108,7 @@ def test_document_file_size_just_right(client, store, antivirus):
         'encryption_key': bytes(32),
     }
 
-    antivirus.scan.return_value = True
+    # antivirus.scan.return_value = True
 
     response = client.post(
         '/services/12345678-1111-1111-1111-123456789012/documents',

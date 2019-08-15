@@ -50,7 +50,7 @@ def test_get_token_from_empty_headers(app):
 
 
 def test_check_auth(mocker):
-    mocker.patch('app.utils.authentication.get_token_from_headers', return_value='test-token')
+    mocker.patch('app.utils.authentication.get_token_from_headers', return_value='auth-token')
     abort = mocker.patch('app.utils.authentication.abort')
 
     check_auth()
