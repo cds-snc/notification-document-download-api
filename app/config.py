@@ -1,5 +1,8 @@
 import os
 from flask_env import MetaFlaskEnv
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Config(metaclass=MetaFlaskEnv):
