@@ -13,4 +13,4 @@ jobs:
     steps:
     - name: Run tests
       uses: docker://python:3.6-stretch
-      runs: pip3 install -r requirements-dev.txt && make test
+      run: pip3 install -r requirements-dev.txt && make test
