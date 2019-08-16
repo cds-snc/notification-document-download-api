@@ -6,7 +6,7 @@ jobs:
   scan:
     steps:
     - name: Scan for seekrets
-    - uses: cdssnc/seekret-github-action
+    - uses: docker://cdssnc/seekret-github-action
     
   test:
     steps:
