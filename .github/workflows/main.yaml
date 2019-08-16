@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   scan:
+    runs-on: ubuntu-latest
     steps:
-      - name: Scan for seekrets
-        uses: docker://cdssnc/seekret-github-action
+      name: Scan for seekrets
+      uses: docker://cdssnc/seekret-github-action
