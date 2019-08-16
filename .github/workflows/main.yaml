@@ -11,7 +11,8 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
     - name: Run tests
-      uses: docker://python:3.6-stretch
+    - uses: docker://python:3.6-stretch
       with: 
-        entrypoint: /bin/bash -c pip3 install -r requirements-dev.txt && make test
+        entrypoint: pip3 install -r requirements-dev.txt && make test
