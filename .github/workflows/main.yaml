@@ -3,11 +3,6 @@ name: CI
 on: [push]
 
 jobs:
-  scan:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Scan for seekrets
-      uses: docker://cdssnc/seekret-github-action
   tests:
     runs-on: ubuntu-latest
     steps:
