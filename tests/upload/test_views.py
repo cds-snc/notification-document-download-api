@@ -13,7 +13,7 @@ def store(mocker):
 @pytest.fixture
 def antivirus(mocker):
     # return mocker.patch('app.upload.views.antivirus_client')
-    return 
+    return
 
 
 def test_document_upload_returns_link_to_frontend(client, store, antivirus):
@@ -52,6 +52,7 @@ def test_document_upload_returns_link_to_frontend(client, store, antivirus):
         'status': 'ok'
     }
 
+
 @pytest.mark.skip(reason="NO AV")
 def test_document_upload_virus_found(client, store, antivirus):
     antivirus.scan.return_value = False
@@ -68,6 +69,7 @@ def test_document_upload_virus_found(client, store, antivirus):
     assert response.json == {
         'error': "Document didn't pass the virus scan"
     }
+
 
 @pytest.mark.skip(reason="NO AV")
 def test_document_upload_virus_scan_error(client, store, antivirus):
