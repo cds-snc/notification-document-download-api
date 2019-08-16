@@ -28,7 +28,7 @@ class Config(metaclass=MetaFlaskEnv):
     NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH", "application.log")
 
     ANTIVIRUS_API_HOST = os.getenv("ANTIVIRUS_API_HOST", "http://localhost:6016")
-    ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "application.log")
+    ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "")
 
 
 class Test(Config):
