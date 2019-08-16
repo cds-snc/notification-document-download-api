@@ -6,10 +6,10 @@ jobs:
   scan:
     steps:
     - name: Scan for seekrets
-    - uses: docker://cdssnc/seekret-github-action
+      uses: docker://cdssnc/seekret-github-action
     
   test:
     steps:
     - name: Run tests 
-    - uses: docker://python:3.6-stretch
-    - run: pip3 install -r requirements-dev.txt && make test
+      uses: docker://python:3.6-stretch
+      run: pip3 install -r requirements-dev.txt && make test
