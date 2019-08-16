@@ -13,4 +13,6 @@ jobs:
     steps:
     - name: Run tests
       uses: docker://python:3.6-stretch
-    - run: pip3 install -r requirements-dev.txt && make test
+      with: 
+        entrypoint: /bin/bash
+        args: pip3 install -r requirements-dev.txt && make test
