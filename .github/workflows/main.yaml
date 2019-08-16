@@ -8,3 +8,9 @@ jobs:
     steps:
     - name: Scan for seekrets
       uses: docker://cdssnc/seekret-github-action
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run tests
+      uses: docker://python:3.6-stretch
+      runs: pip3 install -r requirements-dev.txt && make test
