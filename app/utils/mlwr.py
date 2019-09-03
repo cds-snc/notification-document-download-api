@@ -1,4 +1,3 @@
-import os
 import uuid
 from assemblyline_client import Client
 from flask import current_app

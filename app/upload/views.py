@@ -1,4 +1,3 @@
-import os
 from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store
