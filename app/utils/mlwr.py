@@ -1,13 +1,14 @@
 import os
 import uuid
 from assemblyline_client import Client
+from flask import current_app
 
 
 def upload_to_mlwr(file):
     client = Client(
-        os.getenv("MLWR_HOST"),
+        current_app.config["MLWR_HOST"],
         apikey=(
-            os.getenv("MLWR_USER"),
-            os.getenv("MLWR_KEY")))
+            current_app.config["MLWR_USER"],
+            current_app.config["MLWR_HOST"]))
     resp = client.submit(contents=file, fname=str(uuid.uuid4()))
     return resp["submission"]["sid"]

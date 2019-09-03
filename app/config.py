@@ -30,6 +30,10 @@ class Config(metaclass=MetaFlaskEnv):
     ANTIVIRUS_API_HOST = os.getenv("ANTIVIRUS_API_HOST", "http://localhost:6016")
     ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "")
 
+    MLWR_HOST = os.getenv("MLWR_HOST", False)
+    MLWR_USER = os.getenv("MLWR_USER", "")
+    MLWR_KEY = os.getenv("MLWR_KEY", "")
+
 
 class Test(Config):
     DEBUG = True
@@ -46,6 +50,7 @@ class Test(Config):
     ANTIVIRUS_API_KEY = 'test-antivirus-secret'
 
     FRONTEND_HOSTNAME = 'localhost:7001'
+    MLWR_HOST = "localhost"
 
 
 class Development(Config):
