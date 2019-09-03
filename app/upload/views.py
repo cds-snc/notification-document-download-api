@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store
 from app.utils import get_mime_type
-from app.utils.antivirus import AntivirusError
+from app.utils.mlwr import upload_to_mlwr
 from app.utils.authentication import check_auth
 from app.utils.urls import get_direct_file_url, get_frontend_download_url
 
@@ -23,17 +23,14 @@ def upload_document(service_id):
                 current_app.config['ALLOWED_MIME_TYPES']
             )
         ), 400
+    file_content = request.files['document'].read()
 
-    try:
-        # virus_free = antivirus_client.scan(request.files['document'])
-        virus_free = True
-    except AntivirusError:
-        return jsonify(error='Antivirus API error'), 503
+    if current_app.config["MLWR_HOST"]:
+        sid = upload_to_mlwr(file_content)
+    else:
+        sid = False
 
-    if not virus_free:
-        return jsonify(error="Document didn't pass the virus scan"), 400
-
-    document = document_store.put(service_id, request.files['document'], mimetype=mimetype)
+    document = document_store.put(service_id, file_content, mimetype=mimetype)
 
     return jsonify(
         status='ok',
@@ -48,6 +45,7 @@ def upload_document(service_id):
                 service_id=service_id,
                 document_id=document['id'],
                 key=document['encryption_key'],
-            )
+            ),
+            'mlwr_sid': sid
         }
     ), 201
