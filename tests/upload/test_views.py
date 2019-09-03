@@ -12,8 +12,7 @@ def store(mocker):
 
 @pytest.fixture
 def antivirus(mocker):
-    # return mocker.patch('app.upload.views.antivirus_client')
-    return
+    return mocker.patch('app.upload.views.upload_to_mlwr')
 
 
 def test_document_upload_returns_link_to_frontend(client, store, antivirus):
@@ -22,7 +21,7 @@ def test_document_upload_returns_link_to_frontend(client, store, antivirus):
         'encryption_key': bytes(32),
     }
 
-    # antivirus.scan.return_value = True
+    antivirus.return_value = "abcd"
 
     response = client.post(
         '/services/00000000-0000-0000-0000-000000000000/documents',
@@ -48,6 +47,7 @@ def test_document_upload_returns_link_to_frontend(client, store, antivirus):
                 '/documents/ffffffff-ffff-ffff-ffff-ffffffffffff',
                 '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
             ]),
+            'mlwr_sid': 'abcd'
         },
         'status': 'ok'
     }
@@ -110,7 +110,7 @@ def test_document_file_size_just_right(client, store, antivirus):
         'encryption_key': bytes(32),
     }
 
-    # antivirus.scan.return_value = True
+    antivirus.return_value = "abcd"
 
     response = client.post(
         '/services/12345678-1111-1111-1111-123456789012/documents',
