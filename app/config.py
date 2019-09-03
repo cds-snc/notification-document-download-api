@@ -45,7 +45,7 @@ class Test(Config):
     ANTIVIRUS_API_HOST = 'https://test-antivirus'
     ANTIVIRUS_API_KEY = 'test-antivirus-secret'
 
-    FRONTEND_HOSTNAME = 'document-download-frontend-test'
+    FRONTEND_HOSTNAME = 'localhost:7001'
 
 
 class Development(Config):
