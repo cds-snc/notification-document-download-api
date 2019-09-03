@@ -25,7 +25,7 @@ def upload_document(service_id):
             )
         ), 400
     file_content = request.files['document'].read()
-    
+
     if os.getenv("MLWR_HOST"):
         sid = upload_to_mlwr(file_content)
     else:
