@@ -42,7 +42,7 @@ class Test(Config):
     SERVER_NAME = 'document-download.test'
 
     SECRET_KEY = 'test-secret'
-    AUTH_TOKENS = 'test-token:test-token-2'
+    AUTH_TOKENS = 'auth-token:test-token:test-token-2'
 
     DOCUMENTS_BUCKET = 'test-bucket'
 
