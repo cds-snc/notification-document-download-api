@@ -1,0 +1,15 @@
+on: push
+name: Continuous Integration
+jobs:
+  build:
+    name: docker://python:3.6-stretch
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: docker://python:3.6-stretch
+      uses: docker://python:3.6-stretch
+      with:
+        entrypoint: /bin/bash
+        args: -c "pip3 install -r requirements-dev.txt && make test"
+    - name: docker://cdssnc/seekret-github-action
+      uses: docker://cdssnc/seekret-github-action
