@@ -37,8 +37,12 @@ jobs:
         run: docker build -t ${{ secrets.AWS_REGISTRY }}/notification-canada-ca/document-download-api:${{ github.sha }} -t ${{ secrets.AWS_REGISTRY }}/notification-canada-ca/document-download-api:latest -f ci/Dockerfile .
       - name: Push short
         run: docker push ${{ secrets.AWS_REGISTRY }}/notification-canada-ca/document-download-api:${{ github.sha }}
+        env:
+          DOCKER_CONFIG: /github/home/.docker/config.json
       - name: Push latest
         run: docker push ${{ secrets.AWS_REGISTRY }}/notification-canada-ca/document-download-api:latest
+        env:
+          DOCKER_CONFIG: /github/home/.docker/config.json
       - name: Apply
         uses: docker://gcr.io/cdssnc/aws-kubectl:latest
         env:
