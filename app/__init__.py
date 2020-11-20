@@ -12,6 +12,7 @@ metrics = GDSMetrics() # noqa
 
 from .download.views import download_blueprint
 from .upload.views import upload_blueprint
+from .healthcheck import healthcheck_blueprint
 
 
 def create_app():
@@ -27,5 +28,6 @@ def create_app():
 
     application.register_blueprint(download_blueprint)
     application.register_blueprint(upload_blueprint)
+    application.register_blueprint(healthcheck_blueprint)
 
     return application
