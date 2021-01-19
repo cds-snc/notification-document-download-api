@@ -100,7 +100,7 @@ def test_document_upload_unknown_type(client):
 
     assert response.status_code == 400
     assert response.json == {
-        'error': "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'text/csv', 'text/plain']" # noqa
+        'error': "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']" # noqa
     }
 
 
@@ -116,7 +116,7 @@ def test_document_file_size_just_right(client, store, antivirus):
         '/services/12345678-1111-1111-1111-123456789012/documents',
         content_type='multipart/form-data',
         data={
-            'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * (2 * 1024 * 1024 - 8)), 'file.pdf')
+            'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * (10 * 1024 * 1024 - 8)), 'file.pdf')
         }
     )
 
@@ -128,7 +128,7 @@ def test_document_file_size_too_large(client):
         '/services/12345678-1111-1111-1111-123456789012/documents',
         content_type='multipart/form-data',
         data={
-            'document': (io.BytesIO(b'pdf' * 1024 * 1024), 'file.pdf')
+            'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * 11 * 1024 * 1024), 'file.pdf')
         }
     )
 

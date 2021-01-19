@@ -1,15 +1,23 @@
 on: push
 name: Continuous Integration
 jobs:
-  build:
-    name: docker://python:3.6-stretch
+  test:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.6-stretch
+
     steps:
-    - uses: actions/checkout@master
-    - name: docker://python:3.6-stretch
-      uses: docker://python:3.6-stretch
+    - uses: actions/checkout@v2
+
+    - uses: actions/cache@v2
       with:
-        entrypoint: /bin/bash
-        args: -c "pip3 install -r requirements-dev.txt && make test"
-    - name: docker://cdssnc/seekret-github-action
-      uses: docker://cdssnc/seekret-github-action
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: pip install -r requirements-dev.txt
+
+    - name: Run tests
+      run: make test

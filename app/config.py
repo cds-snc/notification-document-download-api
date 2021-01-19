@@ -17,9 +17,16 @@ class Config(metaclass=MetaFlaskEnv):
         'application/pdf',
         'text/csv',
         'text/plain',
+        'application/msword',  # .doc
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  # .docx
+        'image/jpeg',
+        'image/png',
+        'application/vnd.ms-excel',  # .xls
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  # .xlsx
+        'application/vnd.apple.numbers',  # "Numbers" app on macOS
     ]
 
-    MAX_CONTENT_LENGTH = 2 * 1024 * 1024 + 1024
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024 + 1024
 
     HTTP_SCHEME = os.getenv("HTTP_SCHEME", "http")
     FRONTEND_HOSTNAME = os.getenv("FRONTEND_HOSTNAME", "localhost:7001")
