@@ -27,3 +27,4 @@ pycryptodome
 
 git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
 
+pyyaml>=5.4 # not directly required, pinned by Snyk to avoid a vulnerability
