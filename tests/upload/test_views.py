@@ -3,6 +3,7 @@ import io
 import pytest
 
 from app.utils.antivirus import AntivirusError
+from tests.conftest import set_config
 
 
 @pytest.fixture
@@ -102,6 +103,37 @@ def test_document_upload_unknown_type(client):
     assert response.json == {
         'error': "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']" # noqa
     }
+
+
+@pytest.mark.parametrize("extra_mime_types,expected_status_code", [
+    ("12345678-1111-1111-1111-123456789012:application/octet-stream", 201),
+    ("12345678-1111-1111-1111-123456789012:application/octet-stream,foo:application/json", 201),
+    ("foo:application/json,12345678-1111-1111-1111-123456789012:application/octet-stream", 201),
+    ("12345678-1111-1111-1111-123456789012:application/json", 400),
+    ("", 400),
+])
+def test_document_upload_extra_mime_type(
+    app, client, mocker, store, antivirus, extra_mime_types,
+    expected_status_code
+):
+    # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
+    mocker.patch('app.upload.views.get_mime_type', return_value="application/octet-stream")
+
+    store.put.return_value = {
+        'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+        'encryption_key': bytes(32),
+    }
+    antivirus.return_value = "abcd"
+
+    with set_config(app, EXTRA_MIME_TYPES=extra_mime_types):
+        response = client.post(
+            '/services/12345678-1111-1111-1111-123456789012/documents',
+            content_type='multipart/form-data',
+            data={
+                'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * (10 * 1024 * 1024 - 8)), 'file.pdf')
+            }
+        )
+        assert response.status_code == expected_status_code
 
 
 def test_document_file_size_just_right(client, store, antivirus):
