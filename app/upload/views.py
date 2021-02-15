@@ -16,7 +16,7 @@ def upload_document(service_id):
         return jsonify(error='No document upload'), 400
 
     mimetype = get_mime_type(request.files['document'])
-    if mimetype not in current_app.config['ALLOWED_MIME_TYPES']:
+    if not mime_type_is_allowed(mimetype, service_id):
         return jsonify(
             error="Unsupported document type '{}'. Supported types are: {}".format(
                 mimetype,
@@ -49,3 +49,13 @@ def upload_document(service_id):
             'mlwr_sid': sid
         }
     ), 201
+
+
+def mime_type_is_allowed(mimetype, service_id):
+    if mimetype in current_app.config['ALLOWED_MIME_TYPES']:
+        return True
+
+    # Payload is formatted like "service_id1:mime1,service_id2:mime2"
+    # Example:
+    # "fccd5d86-afd6-491b-afa8-2ff592e1404f:application/octet-stream,95365643-8126-46f1-a222-e0c51fa918f2:application/json"
+    return f"{service_id}:{mimetype}" in current_app.config['EXTRA_MIME_TYPES']

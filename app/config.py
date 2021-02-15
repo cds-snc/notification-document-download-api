@@ -25,6 +25,7 @@ class Config(metaclass=MetaFlaskEnv):
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  # .xlsx
         'application/vnd.apple.numbers',  # "Numbers" app on macOS
     ]
+    EXTRA_MIME_TYPES = os.getenv("EXTRA_MIME_TYPES", "")
 
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024 + 1024
 
