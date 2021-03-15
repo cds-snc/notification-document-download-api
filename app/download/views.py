@@ -12,6 +12,8 @@ def download_document(service_id, document_id):
     if 'key' not in request.args:
         return jsonify(error='Missing decryption key'), 400
 
+    filename = request.args.get('filename')
+
     try:
         key = base64_to_bytes(request.args['key'])
     except ValueError:
@@ -29,7 +31,13 @@ def download_document(service_id, document_id):
         )
         return jsonify(error=str(e)), 400
 
-    response = make_response(send_file(document['body'], mimetype=document['mimetype']))
+    response = make_response(send_file(
+        document['body'],
+        mimetype=document['mimetype'],
+        # as_attachment can only be `True` if the filename is set
+        as_attachment=(filename is not None),
+        attachment_filename=filename,
+    ))
     response.headers['Content-Length'] = document['size']
     response.headers['X-Robots-Tag'] = 'noindex, nofollow'
 
