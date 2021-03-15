@@ -14,10 +14,11 @@ def get_direct_file_url(service_id, document_id, key):
     )
 
 
-def get_frontend_download_url(service_id, document_id, key):
+def get_frontend_download_url(service_id, document_id, key, filename):
     scheme = current_app.config['HTTP_SCHEME']
     netloc = current_app.config['FRONTEND_HOSTNAME']
     path = 'd/{}/{}'.format(uuid_to_base64(service_id), uuid_to_base64(document_id))
-    query = urlencode({'key': bytes_to_base64(key)})
+    query_params = {'key': bytes_to_base64(key), 'filename': filename}
+    query = urlencode({k: v for k, v in query_params.items() if v})
 
     return urlunsplit([scheme, netloc, path, query, None])

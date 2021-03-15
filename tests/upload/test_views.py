@@ -16,39 +16,65 @@ def antivirus(mocker):
     return mocker.patch('app.upload.views.upload_to_mlwr')
 
 
-def test_document_upload_returns_link_to_frontend(client, store, antivirus):
+@pytest.mark.parametrize(
+    "request_includes_filename, filename, in_frontend_url, expected_filename", [
+        (True, None, False, None),
+        (True, 'none', False, None),
+        (True, 'None', False, None),
+        (True, 'custom_filename.pdf', True, 'custom_filename.pdf'),
+        (False, 'whatever', False, None),
+    ]
+)
+def test_document_upload_returns_link_to_frontend(
+    client,
+    store,
+    antivirus,
+    request_includes_filename,
+    filename,
+    in_frontend_url,
+    expected_filename,
+):
     store.put.return_value = {
         'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         'encryption_key': bytes(32),
     }
-
     antivirus.return_value = "abcd"
+    data = {
+        'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf'),
+    }
+
+    frontend_url_parts = [
+        'http://localhost:7001',
+        '/d/AAAAAAAAAAAAAAAAAAAAAA',
+        '/_____________________w',
+        '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+    ]
+
+    if request_includes_filename:
+        data['filename'] = filename
+
+    if in_frontend_url:
+        frontend_url_parts.append(f'&filename={filename}')
 
     response = client.post(
         '/services/00000000-0000-0000-0000-000000000000/documents',
         content_type='multipart/form-data',
-        data={
-            'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf')
-        }
+        data=data
     )
 
     assert response.status_code == 201
     assert response.json == {
         'document': {
             'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-            'url': ''.join([
-                'http://localhost:7001',
-                '/d/AAAAAAAAAAAAAAAAAAAAAA',
-                '/_____________________w',
-                '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-            ]),
+            'url': ''.join(frontend_url_parts),
             'direct_file_url': ''.join([
                 'http://document-download.test',
                 '/services/00000000-0000-0000-0000-000000000000',
                 '/documents/ffffffff-ffff-ffff-ffff-ffffffffffff',
-                '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+                '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
             ]),
-            'mlwr_sid': 'abcd'
+            'mlwr_sid': 'abcd',
+            'filename': expected_filename,
         },
         'status': 'ok'
     }

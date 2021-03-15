@@ -25,6 +25,13 @@ def upload_document(service_id):
         ), 400
     file_content = request.files['document'].read()
 
+    filename = request.form.get('filename')
+    # If the API passed None as an argument, it could be converted
+    # as a string value `None`. Convert it back to a proper None.
+    # See https://bugs.python.org/issue18857
+    if filename and filename.lower() == 'none':
+        filename = None
+
     if current_app.config["MLWR_HOST"]:
         sid = upload_to_mlwr(file_content)
     else:
@@ -45,8 +52,10 @@ def upload_document(service_id):
                 service_id=service_id,
                 document_id=document['id'],
                 key=document['encryption_key'],
+                filename=filename,
             ),
-            'mlwr_sid': sid
+            'mlwr_sid': sid,
+            'filename': filename,
         }
     ), 201
 
