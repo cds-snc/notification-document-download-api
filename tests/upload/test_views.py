@@ -18,9 +18,6 @@ def antivirus(mocker):
 
 @pytest.mark.parametrize(
     "request_includes_filename, filename, in_frontend_url, expected_filename", [
-        (True, None, False, None),
-        (True, 'none', False, None),
-        (True, 'None', False, None),
         (True, 'custom_filename.pdf', True, 'custom_filename.pdf'),
         (False, 'whatever', False, None),
     ]
