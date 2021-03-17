@@ -25,6 +25,8 @@ def upload_document(service_id):
         ), 400
     file_content = request.files['document'].read()
 
+    filename = request.form.get('filename')
+
     if current_app.config["MLWR_HOST"]:
         sid = upload_to_mlwr(file_content)
     else:
@@ -45,8 +47,10 @@ def upload_document(service_id):
                 service_id=service_id,
                 document_id=document['id'],
                 key=document['encryption_key'],
+                filename=filename,
             ),
-            'mlwr_sid': sid
+            'mlwr_sid': sid,
+            'filename': filename,
         }
     ), 201
 
