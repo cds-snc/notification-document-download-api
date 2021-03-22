@@ -13,6 +13,7 @@ def download_document(service_id, document_id):
         return jsonify(error='Missing decryption key'), 400
 
     filename = request.args.get('filename')
+    sending_method = request.args.get('sending_method')
 
     try:
         key = base64_to_bytes(request.args['key'])
@@ -20,7 +21,7 @@ def download_document(service_id, document_id):
         return jsonify(error='Invalid decryption key'), 400
 
     try:
-        document = document_store.get(service_id, document_id, key)
+        document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(
             'Failed to download document: {}'.format(e),
