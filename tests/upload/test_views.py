@@ -17,9 +17,9 @@ def antivirus(mocker):
 
 
 @pytest.mark.parametrize(
-    "request_includes_filename, filename, in_frontend_url, expected_filename", [
-        (True, 'custom_filename.pdf', True, 'custom_filename.pdf'),
-        (False, 'whatever', False, None),
+    "request_includes_filename, filename, in_frontend_url, expected_filename, sending_method", [
+        (True, 'custom_filename.pdf', True, 'custom_filename.pdf', 'attach'),
+        (False, 'whatever', False, None, 'link'),
     ]
 )
 def test_document_upload_returns_link_to_frontend(
@@ -30,6 +30,7 @@ def test_document_upload_returns_link_to_frontend(
     filename,
     in_frontend_url,
     expected_filename,
+    sending_method,
 ):
     store.put.return_value = {
         'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
@@ -38,6 +39,7 @@ def test_document_upload_returns_link_to_frontend(
     antivirus.return_value = "abcd"
     data = {
         'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf'),
+        'sending_method': sending_method
     }
 
     frontend_url_parts = [
@@ -69,9 +71,11 @@ def test_document_upload_returns_link_to_frontend(
                 '/services/00000000-0000-0000-0000-000000000000',
                 '/documents/ffffffff-ffff-ffff-ffff-ffffffffffff',
                 '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                f'&sending_method={sending_method}'
             ]),
             'mlwr_sid': 'abcd',
             'filename': expected_filename,
+            'sending_method': sending_method
         },
         'status': 'ok'
     }
