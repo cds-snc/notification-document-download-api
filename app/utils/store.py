@@ -65,4 +65,4 @@ class DocumentStore:
 
     def get_document_key(self, service_id, document_id, sending_method=None):
         key_prefix = 'tmp/' if sending_method == 'attach' else ''
-        return "{}{}/{}".format(key_prefix, service_id, document_id)
+        return f"{key_prefix}{service_id}/{document_id}".
