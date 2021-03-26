@@ -17,7 +17,7 @@ class DocumentStore:
     def init_app(self, app):
         self.bucket = app.config['DOCUMENTS_BUCKET']
 
-    def put(self, service_id, document_stream, *, sending_method, mimetype='application/pdf'):
+    def put(self, service_id, document_stream, sending_method, mimetype='application/pdf'):
         """
         returns dict {'id': 'some-uuid', 'encryption_key': b'32 byte encryption key'}
         """
@@ -65,4 +65,4 @@ class DocumentStore:
 
     def get_document_key(self, service_id, document_id, sending_method=None):
         key_prefix = 'tmp/' if sending_method == 'attach' else ''
-        return f"{key_prefix}{service_id}/{document_id}".
+        return f"{key_prefix}{service_id}/{document_id}"
