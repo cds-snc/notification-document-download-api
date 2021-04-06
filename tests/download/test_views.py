@@ -43,7 +43,8 @@ def test_document_download(client, store):
     store.get.assert_called_once_with(
         UUID('00000000-0000-0000-0000-000000000000'),
         UUID('ffffffff-ffff-ffff-ffff-ffffffffffff'),
-        bytes(32)
+        bytes(32),
+        None
     )
 
 
@@ -79,7 +80,8 @@ def test_document_download_with_filename(client, store):
     store.get.assert_called_once_with(
         UUID('00000000-0000-0000-0000-000000000000'),
         UUID('ffffffff-ffff-ffff-ffff-ffffffffffff'),
-        bytes(32)
+        bytes(32),
+        None
     )
 
 

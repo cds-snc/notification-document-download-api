@@ -17,7 +17,7 @@ class DocumentStore:
     def init_app(self, app):
         self.bucket = app.config['DOCUMENTS_BUCKET']
 
-    def put(self, service_id, document_stream, *, mimetype='application/pdf'):
+    def put(self, service_id, document_stream, sending_method, mimetype='application/pdf'):
         """
         returns dict {'id': 'some-uuid', 'encryption_key': b'32 byte encryption key'}
         """
@@ -27,7 +27,7 @@ class DocumentStore:
 
         self.s3.put_object(
             Bucket=self.bucket,
-            Key=self.get_document_key(service_id, document_id),
+            Key=self.get_document_key(service_id, document_id, sending_method),
             Body=document_stream,
             ContentType=mimetype,
             SSECustomerKey=encryption_key,
@@ -39,14 +39,14 @@ class DocumentStore:
             'encryption_key': encryption_key
         }
 
-    def get(self, service_id, document_id, decryption_key):
+    def get(self, service_id, document_id, decryption_key, sending_method):
         """
         decryption_key should be raw bytes
         """
         try:
             document = self.s3.get_object(
                 Bucket=self.bucket,
-                Key=self.get_document_key(service_id, document_id),
+                Key=self.get_document_key(service_id, document_id, sending_method),
                 SSECustomerKey=decryption_key,
                 SSECustomerAlgorithm='AES256'
             )
@@ -63,5 +63,6 @@ class DocumentStore:
     def generate_encryption_key(self):
         return os.urandom(32)
 
-    def get_document_key(self, service_id, document_id):
-        return "{}/{}".format(service_id, document_id)
+    def get_document_key(self, service_id, document_id, sending_method=None):
+        key_prefix = 'tmp/' if sending_method == 'attach' else ''
+        return f"{key_prefix}{service_id}/{document_id}"

@@ -40,7 +40,7 @@ def test_document_key_with_uuid(store):
 
 
 def test_put_document(store):
-    ret = store.put('service-id', mock.Mock())
+    ret = store.put('service-id', mock.Mock(), sending_method='link')
 
     assert ret == {
         'id': Matcher('UUID length match', lambda x: len(x) == 36),
@@ -57,8 +57,26 @@ def test_put_document(store):
     )
 
 
+def test_put_document_attach_tmp_dir(store):
+    ret = store.put('service-id', mock.Mock(), sending_method='attach')
+
+    assert ret == {
+        'id': Matcher('UUID length match', lambda x: len(x) == 36),
+        'encryption_key': Matcher('32 bytes', lambda x: len(x) == 32 and isinstance(x, bytes))
+    }
+
+    store.s3.put_object.assert_called_once_with(
+        Body=mock.ANY,
+        Bucket='test-bucket',
+        ContentType='application/pdf',
+        Key=Matcher('document key', lambda x: x.startswith('tmp/service-id/') and len(x) == 15 + 36),
+        SSECustomerKey=ret['encryption_key'],
+        SSECustomerAlgorithm='AES256'
+    )
+
+
 def test_get_document(store):
-    assert store.get('service-id', 'document-id', bytes(32)) == {
+    assert store.get('service-id', 'document-id', bytes(32), sending_method='link') == {
         'body': mock.ANY,
         'mimetype': 'application/pdf',
         'size': 100,
@@ -67,6 +85,22 @@ def test_get_document(store):
     store.s3.get_object.assert_called_once_with(
         Bucket='test-bucket',
         Key='service-id/document-id',
+        SSECustomerAlgorithm='AES256',
+        # 32 null bytes
+        SSECustomerKey=bytes(32),
+    )
+
+
+def test_get_document_attach_tmp_dir(store):
+    assert store.get('service-id', 'document-id', bytes(32), sending_method='attach') == {
+        'body': mock.ANY,
+        'mimetype': 'application/pdf',
+        'size': 100,
+    }
+
+    store.s3.get_object.assert_called_once_with(
+        Bucket='test-bucket',
+        Key='tmp/service-id/document-id',
         SSECustomerAlgorithm='AES256',
         # 32 null bytes
         SSECustomerKey=bytes(32),
@@ -82,4 +116,4 @@ def test_get_document_with_boto_error(store):
     }, 'GetObject'))
 
     with pytest.raises(DocumentStoreError):
-        store.get('service-id', 'document-id', '0f0f0f')
+        store.get('service-id', 'document-id', '0f0f0f', sending_method='link')

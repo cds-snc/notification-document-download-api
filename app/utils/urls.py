@@ -4,12 +4,13 @@ from flask import current_app, url_for
 from notifications_utils.base64_uuid import bytes_to_base64, uuid_to_base64
 
 
-def get_direct_file_url(service_id, document_id, key):
+def get_direct_file_url(service_id, document_id, key, sending_method):
     return url_for(
         'download.download_document',
         service_id=service_id,
         document_id=document_id,
         key=bytes_to_base64(key),
+        sending_method=sending_method,
         _external=True
     )
 

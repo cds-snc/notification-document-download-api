@@ -27,12 +27,14 @@ def upload_document(service_id):
 
     filename = request.form.get('filename')
 
+    sending_method = request.form.get('sending_method')
+
     if current_app.config["MLWR_HOST"]:
         sid = upload_to_mlwr(file_content)
     else:
         sid = False
 
-    document = document_store.put(service_id, file_content, mimetype=mimetype)
+    document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
 
     return jsonify(
         status='ok',
@@ -42,6 +44,7 @@ def upload_document(service_id):
                 service_id=service_id,
                 document_id=document['id'],
                 key=document['encryption_key'],
+                sending_method=sending_method,
             ),
             'url': get_frontend_download_url(
                 service_id=service_id,
@@ -51,6 +54,7 @@ def upload_document(service_id):
             ),
             'mlwr_sid': sid,
             'filename': filename,
+            'sending_method': sending_method,
         }
     ), 201
 
