@@ -49,8 +49,10 @@ def test_document_upload_returns_link_to_frontend(
         '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
     ]
 
+    expected_extension = None
     if request_includes_filename:
         data['filename'] = filename
+        expected_extension = filename.split('.')[-1]
 
     if in_frontend_url:
         frontend_url_parts.append(f'&filename={filename}')
@@ -77,16 +79,18 @@ def test_document_upload_returns_link_to_frontend(
             'filename': expected_filename,
             'sending_method': sending_method,
             'mime_type': 'application/pdf',
-            'file_size': 22
+            'file_size': 22,
+            'file_extension': expected_extension
         },
         'status': 'ok'
     }
 
 
 @pytest.mark.parametrize(
-    "content, expected_mime, expected_size", [
-        (b'%PDF-1.4 file contents', 'application/pdf', 22),
-        (b'Canada', 'text/plain', 6),
+    "content, filename, expected_extension, expected_mime, expected_size", [
+        (b'%PDF-1.4 file contents', 'file.pdf', 'pdf', 'application/pdf', 22),
+        (b'Canada', 'text.txt', 'txt', 'text/plain', 6),
+        (b'Canada', 'noextension', None, 'text/plain', 6),
     ]
 )
 def test_document_upload_returns_size_and_mime(
@@ -94,6 +98,8 @@ def test_document_upload_returns_size_and_mime(
     store,
     antivirus,
     content,
+    filename,
+    expected_extension,
     expected_mime,
     expected_size
 ):
@@ -108,13 +114,15 @@ def test_document_upload_returns_size_and_mime(
         content_type='multipart/form-data',
         data={
             'document': (io.BytesIO(content), 'file.pdf'),
-            'sending_method': 'link'
+            'sending_method': 'link',
+            'filename': filename,
         }
     )
 
     assert response.status_code == 201
     assert response.json['document']['mime_type'] == expected_mime
     assert response.json['document']['file_size'] == expected_size
+    assert response.json['document']['file_extension'] == expected_extension
 
 
 @pytest.mark.skip(reason="NO AV")

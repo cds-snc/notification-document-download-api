@@ -1,3 +1,5 @@
+import pathlib
+
 from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store
@@ -26,6 +28,9 @@ def upload_document(service_id):
     file_content = request.files['document'].read()
 
     filename = request.form.get('filename')
+    file_extension = None
+    if filename and '.' in filename:
+        file_extension = ''.join(pathlib.Path(filename).suffixes).lstrip('.')
 
     sending_method = request.form.get('sending_method')
 
@@ -57,6 +62,7 @@ def upload_document(service_id):
             'sending_method': sending_method,
             'mime_type': mimetype,
             'file_size': len(file_content),
+            'file_extension': file_extension,
         }
     ), 201
 
