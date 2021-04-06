@@ -55,6 +55,8 @@ def upload_document(service_id):
             'mlwr_sid': sid,
             'filename': filename,
             'sending_method': sending_method,
+            'mime_type': mimetype,
+            'file_size': len(file_content),
         }
     ), 201
 

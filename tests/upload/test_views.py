@@ -75,10 +75,46 @@ def test_document_upload_returns_link_to_frontend(
             ]),
             'mlwr_sid': 'abcd',
             'filename': expected_filename,
-            'sending_method': sending_method
+            'sending_method': sending_method,
+            'mime_type': 'application/pdf',
+            'file_size': 22
         },
         'status': 'ok'
     }
+
+
+@pytest.mark.parametrize(
+    "content, expected_mime, expected_size", [
+        (b'%PDF-1.4 file contents', 'application/pdf', 22),
+        (b'Canada', 'text/plain', 6),
+    ]
+)
+def test_document_upload_returns_size_and_mime(
+    client,
+    store,
+    antivirus,
+    content,
+    expected_mime,
+    expected_size
+):
+    store.put.return_value = {
+        'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+        'encryption_key': bytes(32),
+    }
+    antivirus.return_value = "abcd"
+
+    response = client.post(
+        '/services/00000000-0000-0000-0000-000000000000/documents',
+        content_type='multipart/form-data',
+        data={
+            'document': (io.BytesIO(content), 'file.pdf'),
+            'sending_method': 'link'
+        }
+    )
+
+    assert response.status_code == 201
+    assert response.json['document']['mime_type'] == expected_mime
+    assert response.json['document']['file_size'] == expected_size
 
 
 @pytest.mark.skip(reason="NO AV")
