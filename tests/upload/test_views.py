@@ -113,7 +113,7 @@ def test_document_upload_returns_size_and_mime(
         '/services/00000000-0000-0000-0000-000000000000/documents',
         content_type='multipart/form-data',
         data={
-            'document': (io.BytesIO(content), 'file.pdf'),
+            'document': (io.BytesIO(content), filename),
             'sending_method': 'link',
             'filename': filename,
         }
