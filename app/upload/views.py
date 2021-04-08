@@ -33,7 +33,7 @@ def upload_document(service_id):
         file_extension = ''.join(pathlib.Path(filename.lower()).suffixes).lstrip('.')
 
     # Our MIME type auto-detection resolves CSV content as text/plain,
-    # so we use fix that if possible
+    # so we fix that if possible
     if (filename or '').lower().endswith('.csv') and mimetype == 'text/plain':
         mimetype = 'text/csv'
 
