@@ -30,7 +30,12 @@ def upload_document(service_id):
     filename = request.form.get('filename')
     file_extension = None
     if filename and '.' in filename:
-        file_extension = ''.join(pathlib.Path(filename).suffixes).lstrip('.')
+        file_extension = ''.join(pathlib.Path(filename.lower()).suffixes).lstrip('.')
+
+    # Our MIME type auto-detection resolves CSV content as text/plain,
+    # so we fix that if possible
+    if (filename or '').lower().endswith('.csv') and mimetype == 'text/plain':
+        mimetype = 'text/csv'
 
     sending_method = request.form.get('sending_method')
 

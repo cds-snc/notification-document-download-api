@@ -91,6 +91,9 @@ def test_document_upload_returns_link_to_frontend(
         (b'%PDF-1.4 file contents', 'file.pdf', 'pdf', 'application/pdf', 22),
         (b'Canada', 'text.txt', 'txt', 'text/plain', 6),
         (b'Canada', 'noextension', None, 'text/plain', 6),
+        (b'foo,bar', 'file.csv', 'csv', 'text/csv', 7),
+        (b'foo,bar', 'FILE.CSV', 'csv', 'text/csv', 7),
+        (b'foo,bar', None, None, 'text/plain', 7),
     ]
 )
 def test_document_upload_returns_size_and_mime(
@@ -113,7 +116,7 @@ def test_document_upload_returns_size_and_mime(
         '/services/00000000-0000-0000-0000-000000000000/documents',
         content_type='multipart/form-data',
         data={
-            'document': (io.BytesIO(content), filename),
+            'document': (io.BytesIO(content), filename or 'fake'),
             'sending_method': 'link',
             'filename': filename,
         }
