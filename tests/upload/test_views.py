@@ -91,6 +91,7 @@ def test_document_upload_returns_link_to_frontend(
         (b'%PDF-1.4 file contents', 'file.pdf', 'pdf', 'application/pdf', 22),
         (b'Canada', 'text.txt', 'txt', 'text/plain', 6),
         (b'Canada', 'noextension', None, 'text/plain', 6),
+        (b'foo,bar', 'file.csv', 'csv', 'text/csv', 7),
     ]
 )
 def test_document_upload_returns_size_and_mime(
