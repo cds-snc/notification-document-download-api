@@ -22,8 +22,8 @@ def test_get_frontend_download_url_returns_frontend_url_without_filename(app):
 def test_get_frontend_download_url_returns_frontend_url_with_filename(app):
     assert get_frontend_download_url(
         service_id=UUID(int=0), document_id=UUID(int=1), key=SAMPLE_KEY,
-        filename='file.pdf'
-    ) == 'http://localhost:7001/d/{}/{}?key={}&filename=file.pdf'.format(
+        filename="ça va.pdf"
+    ) == 'http://localhost:7001/d/{}/{}?key={}&filename=%C3%A7a%20va.pdf'.format(
         'AAAAAAAAAAAAAAAAAAAAAA',
         'AAAAAAAAAAAAAAAAAAAAAQ',
         SAMPLE_B64
