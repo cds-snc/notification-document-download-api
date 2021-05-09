@@ -12,7 +12,7 @@ python-magic==0.4.15
 # PaaS
 
 gunicorn==20.0.4
-eventlet==0.28.0
+eventlet==0.31.0
 
 awscli-cwlogs>=1.4.6,<1.5
 
