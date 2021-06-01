@@ -69,8 +69,13 @@ class Production(Config):
     DEBUG = False
 
 
+class Staging(Production):
+    pass
+
+
 configs = {
     'test': Test,
     'development': Development,
+    'staging': Staging,
     'production': Production,
 }

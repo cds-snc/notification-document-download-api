@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from notifications_utils import logging, request_helper
 from gds_metrics import GDSMetrics
@@ -17,7 +19,7 @@ from .healthcheck import healthcheck_blueprint
 
 def create_app():
     application = Flask('app')
-    application.config.from_object(configs[application.env])
+    application.config.from_object(configs[os.environ['NOTIFY_ENVIRONMENT']])
 
     request_helper.init_app(application)
     logging.init_app(application)
