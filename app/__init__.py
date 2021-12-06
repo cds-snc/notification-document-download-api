@@ -2,7 +2,6 @@ import os
 
 from flask import Flask
 from notifications_utils import logging, request_helper
-from gds_metrics import GDSMetrics
 
 from app.config import configs
 from app.utils.store import DocumentStore
