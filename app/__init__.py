@@ -10,7 +10,6 @@ from app.utils.antivirus import AntivirusClient
 
 document_store = DocumentStore() # noqa, has to be imported before views
 antivirus_client = AntivirusClient() # noqa
-metrics = GDSMetrics() # noqa
 
 from .download.views import download_blueprint
 from .upload.views import upload_blueprint
@@ -26,7 +25,6 @@ def create_app():
 
     document_store.init_app(application)
     antivirus_client.init_app(application)
-    metrics.init_app(application)
 
     application.register_blueprint(download_blueprint)
     application.register_blueprint(upload_blueprint)
