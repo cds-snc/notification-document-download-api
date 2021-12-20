@@ -16,7 +16,7 @@ from .healthcheck import healthcheck_blueprint
 
 
 def create_app():
-    application = Flask('app')
+    application = Flask('app', static_folder=None)
     application.config.from_object(configs[os.environ['NOTIFY_ENVIRONMENT']])
 
     request_helper.init_app(application)
