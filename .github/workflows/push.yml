@@ -30,7 +30,7 @@ jobs:
       run: make test
 
     - name: Checks for new endpoints against AWS WAF rules
-      uses: cds-snc/notification-utils/actions/waffles@master
+      uses: cds-snc/notification-utils/.github/actions/waffles@master
       with:
         app-loc: '${{ github.workspace }}'
         app-libs: '/usr/local/lib/python3.9/site-packages'
