@@ -29,27 +29,6 @@ jobs:
     - name: Run tests
       run: make test
 
-    - name: Echo workspace directory
-      working-directory: ${{ github.workspace }}
-      shell: bash
-      run: |
-        echo $(pwd)
-
-    - name: List workspace directory
-      working-directory: ${{ github.workspace }}
-      run: |
-        ls -la
-
-    - name: List Python sys.path entries
-      working-directory: ${{ github.workspace }}
-      run: |
-        python -c "import sys; print(sys.path)"
-
-    - name: List site-packages folder on host
-      working-directory: /opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/site-packages
-      run: |
-        ls -la
-
     - name: Copy site-packages in workspace
       working-directory: /opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/
       shell: bash
@@ -61,11 +40,6 @@ jobs:
       shell: bash
       run: |
         cp -f .env.example .env
-
-    - name: List site-packages folder on workspace
-      working-directory: ${{ github.workspace }}/env/site-packages
-      run: |
-        ls -la
 
     - name: Checks for new endpoints against AWS WAF rules
       uses: cds-snc/notification-utils/.github/actions/waffles@master
