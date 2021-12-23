@@ -65,7 +65,7 @@ jobs:
       uses: cds-snc/notification-utils/.github/actions/waffles@master
       with:
         app-loc: '/github/workspace'
-        app-libs: '${{ github.workspace }}/env/site-packages'
+        app-libs: '/github/workspace/env/site-packages'
         flask-mod: 'application'
         flask-prop: 'application'
         base-url: 'https://api.document.staging.notification.cdssandbox.xyz'
