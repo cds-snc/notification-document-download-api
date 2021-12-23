@@ -29,6 +29,11 @@ jobs:
     - name: Run tests
       run: make test
 
+    - name: List workspace directory
+      working-directory: ${{ github.workspace }}
+      run: |
+        ls -la
+
     - name: Checks for new endpoints against AWS WAF rules
       uses: cds-snc/notification-utils/.github/actions/waffles@master
       with:
