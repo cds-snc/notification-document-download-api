@@ -56,6 +56,12 @@ jobs:
       run: |
         mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
 
+    - name: Install development .env file
+      working-directory: ${{ github.workspace }}
+      shell: bash
+      run: |
+        cp -f .env.example .env
+
     - name: List site-packages folder on workspace
       working-directory: ${{ github.workspace }}/env/site-packages
       run: |
