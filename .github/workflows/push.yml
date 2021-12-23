@@ -45,10 +45,16 @@ jobs:
       run: |
         python -c "import sys; print(sys.path)"
 
-    - name: List site-packages folder
+    - name: List site-packages folder on host
       working-directory: /opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/site-packages
       run: |
         ls -la
+
+    - name: Copy site-packages in workspace
+      working-directory: /opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/
+      shell: bash
+      run: |
+        mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
 
     - name: Checks for new endpoints against AWS WAF rules
       uses: cds-snc/notification-utils/.github/actions/waffles@master
