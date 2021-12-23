@@ -57,7 +57,7 @@ jobs:
         mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
 
     - name: List site-packages folder on workspace
-      working-directory: ${{ github.workspace }}/env/
+      working-directory: ${{ github.workspace }}/env/site-packages
       run: |
         ls -la
 
