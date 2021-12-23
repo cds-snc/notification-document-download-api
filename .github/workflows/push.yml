@@ -56,11 +56,16 @@ jobs:
       run: |
         mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
 
+    - name: List site-packages folder on workspace
+      working-directory: ${{ github.workspace }}/env/
+      run: |
+        ls -la
+
     - name: Checks for new endpoints against AWS WAF rules
       uses: cds-snc/notification-utils/.github/actions/waffles@master
       with:
         app-loc: '/github/workspace'
-        app-libs: '/opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/site-packages'
+        app-libs: '${{ github.workspace }}/env/site-packages'
         flask-mod: 'application'
         flask-prop: 'application'
         base-url: 'https://api.document.staging.notification.cdssandbox.xyz'
