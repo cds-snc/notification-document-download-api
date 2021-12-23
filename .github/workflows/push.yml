@@ -29,8 +29,19 @@ jobs:
     - name: Run tests
       run: make test
 
+    - name: Echo workspace directory
+      working-directory: ${{ github.workspace }}
+      shell: bash
+      run: |
+        echo $(pwd)
+
     - name: List workspace directory
       working-directory: ${{ github.workspace }}
+      run: |
+        ls -la
+
+    - name: List Python site-packages directory
+      working-directory: /usr/local/lib/python3.9/site-packages
       run: |
         ls -la
 
