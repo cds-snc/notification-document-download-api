@@ -55,9 +55,6 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         kubectl set image deployment.apps/document-download-api document-download-api=$DOCKER_SLUG:${GITHUB_SHA::7} -n=notification-canada-ca --kubeconfig=$HOME/.kube/config
-    - uses: cds-snc/notification-pr-bot@master
-      env:
-        TOKEN: ${{ secrets.PR_BOT_TOKEN }}
 
     - name: my-app-install token
       id: notify-pr-bot
