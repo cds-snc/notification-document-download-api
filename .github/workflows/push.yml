@@ -2,7 +2,7 @@ on: push
 name: Continuous Integration
 jobs:
   test:
-    name: docker://python:3.9-slim
+    name: Continuous integration tests
     runs-on: ubuntu-latest
 
     steps:
