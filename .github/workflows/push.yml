@@ -2,16 +2,16 @@ on: push
 name: Continuous Integration
 jobs:
   test:
-    name: docker://python:3.6-stretch
+    name: Continuous integration tests
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python 3.6
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: 3.9
 
     - name: Upgrade pip
       run: python -m pip install --upgrade pip
@@ -28,3 +28,24 @@ jobs:
 
     - name: Run tests
       run: make test
+
+    - name: Copy site-packages in workspace
+      working-directory: /opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/
+      shell: bash
+      run: |
+        mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
+
+    - name: Install development .env file
+      working-directory: ${{ github.workspace }}
+      shell: bash
+      run: |
+        cp -f .env.example .env
+
+    - name: Checks for new endpoints against AWS WAF rules
+      uses: cds-snc/notification-utils/.github/actions/waffles@master
+      with:
+        app-loc: '/github/workspace'
+        app-libs: '/github/workspace/env/site-packages'
+        flask-mod: 'application'
+        flask-prop: 'application'
+        base-url: 'https://api.document.staging.notification.cdssandbox.xyz'
