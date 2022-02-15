@@ -30,7 +30,7 @@ jobs:
       run: make test
 
     - name: Copy site-packages in workspace
-      working-directory: /opt/hostedtoolcache/Python/3.9.9/x64/lib/python3.9/
+      working-directory: /opt/hostedtoolcache/Python/${{ env.python_version }}/x64/lib/python3.9/
       shell: bash
       run: |
         mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
