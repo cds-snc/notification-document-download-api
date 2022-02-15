@@ -26,9 +26,12 @@ jobs:
 
     - name: Run tests
       run: make test
-
+    - name: Get python version
+      run: |
+        python_version=$(python  -V | cut -d' ' -f2)
+        echo "python_version=${python_version}" >> $GITHUB_ENV
     - name: Copy site-packages in workspace
-      working-directory: /opt/hostedtoolcache/Python/$(python  -V | cut -d' ' -f2)/x64/lib/python3.9/
+      working-directory: /opt/hostedtoolcache/Python/${{ env.python_version }}/x64/lib/python3.9/
       shell: bash
       run: |
         mkdir -p "${{ github.workspace }}/env/" && cp -fR site-packages "${{ github.workspace }}/env/"
