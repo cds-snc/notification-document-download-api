@@ -7,6 +7,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Get python version
+      run: |
+        python_version=$(cat .python-version)
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
