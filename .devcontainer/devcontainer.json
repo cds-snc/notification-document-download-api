@@ -1,0 +1,32 @@
+{
+	"name": "notification-document-download-api",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+
+	"remoteEnv": {
+		"PATH": "/home/vscode/.local/bin:${containerEnv:PATH}" // give our installed Python modules precedence
+	},
+
+	"containerEnv": {
+		"SHELL": "/bin/zsh"
+	},
+
+	"settings": { 
+		"python.linting.enabled": true,
+		"python.linting.pylintEnabled": true,
+		"python.linting.pylintPath": "/usr/local/bin/pylint",
+		"python.pythonPath": "/usr/local/bin/python",
+	},
+
+	"extensions": [
+		"ms-python.python",		
+		"eamodio.gitlens",
+		"GitHub.copilot",
+	],
+
+	"forwardPorts": [7000],
+	"postCreateCommand": "notify-dev-entrypoint.sh",
+	"remoteUser": "vscode"
+}
