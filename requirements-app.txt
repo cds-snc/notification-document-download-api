@@ -14,7 +14,7 @@ eventlet==0.28.0
 
 awscli-cwlogs>=1.4.6,<1.5
 
-git+https://github.com/cds-snc/notifier-utils.git@46.3.0#egg=notifications-utils
+git+https://github.com/cds-snc/notifier-utils.git@46.5.0#egg=notifications-utils
 
 socketio-client==0.5.6
 requests

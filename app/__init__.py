@@ -16,8 +16,10 @@ from .healthcheck import healthcheck_blueprint
 
 
 def create_app():
+    config = configs[os.environ['NOTIFY_ENVIRONMENT']]
+
     application = Flask('app', static_folder=None)
-    application.config.from_object(configs[os.environ['NOTIFY_ENVIRONMENT']])
+    application.config.from_object(config)
 
     request_helper.init_app(application)
     logging.init_app(application)
@@ -28,5 +30,7 @@ def create_app():
     application.register_blueprint(download_blueprint)
     application.register_blueprint(upload_blueprint)
     application.register_blueprint(healthcheck_blueprint)
+
+    application.logger.info(f"Notify config: {config.get_safe_config()}")
 
     return application
