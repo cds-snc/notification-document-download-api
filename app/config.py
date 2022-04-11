@@ -1,7 +1,6 @@
 import os
 from flask_env import MetaFlaskEnv
 from dotenv import load_dotenv
-from notifications_utils import logging
 
 load_dotenv()
 
@@ -42,22 +41,6 @@ class Config(metaclass=MetaFlaskEnv):
     MLWR_HOST = os.getenv("MLWR_HOST", False)
     MLWR_USER = os.getenv("MLWR_USER", "")
     MLWR_KEY = os.getenv("MLWR_KEY", "")
-
-    @classmethod
-    def get_sensitive_config(cls) -> list[str]:
-        "List of config keys that contain sensitive information"
-        return [
-            "ANTIVIRUS_API_KEY",
-            "AUTH_TOKENS",
-            "MLWR_KEY",
-            "MLWR_USER",
-            "SECRET_KEY",
-        ]
-
-    @classmethod
-    def get_safe_config(cls) -> dict:
-        "Returns a dict of config keys and values with sensitive values masked"
-        return logging.get_class_attrs(cls, cls.get_sensitive_config())
 
 
 class Test(Config):
