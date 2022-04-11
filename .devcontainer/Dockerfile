@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.9
+FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.6
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
