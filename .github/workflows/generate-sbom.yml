@@ -6,13 +6,13 @@ on:
       - main
     paths:
       - requirements.txt
-      - .github/workflows/generate_sbom.yml
+      - .github/workflows/generate-sbom.yml
   push:
     branches:
       - main
     paths:
       - requirements.txt
-      - .github/workflows/generate_sbom.yml
+      - .github/workflows/generate-sbom.yml
 
 jobs:
   generate-sbom:
