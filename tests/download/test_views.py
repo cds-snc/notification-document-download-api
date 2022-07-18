@@ -13,7 +13,11 @@ def store(mocker):
     return mocker.patch('app.download.views.document_store')
 
 
-def test_document_download(client, store):
+@pytest.mark.parametrize(
+    "endpoint",
+    ['download.download_document', 'download.download_document_b64'],
+)
+def test_document_download(client, store, endpoint):
     store.get.return_value = {
         'body': io.BytesIO(b'PDF document contents'),
         'mimetype': 'application/pdf',
@@ -22,7 +26,7 @@ def test_document_download(client, store):
 
     response = client.get(
         url_for(
-            'download.download_document',
+            endpoint,
             service_id='00000000-0000-0000-0000-000000000000',
             document_id='ffffffff-ffff-ffff-ffff-ffffffffffff',
             key='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',  # 32 \x00 bytes
