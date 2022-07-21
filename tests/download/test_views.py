@@ -30,7 +30,6 @@ def test_document_download(client, store, endpoint):
             service_id='00000000-0000-0000-0000-000000000000',
             document_id='ffffffff-ffff-ffff-ffff-ffffffffffff',
             key='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',  # 32 \x00 bytes
-            sending_method="attach"
         )
     )
 
@@ -49,7 +48,7 @@ def test_document_download(client, store, endpoint):
         UUID('00000000-0000-0000-0000-000000000000'),
         UUID('ffffffff-ffff-ffff-ffff-ffffffffffff'),
         bytes(32),
-        "attach"
+        "link"
     )
 
 
