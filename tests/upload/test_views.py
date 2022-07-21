@@ -17,18 +17,18 @@ def antivirus(mocker):
 
 
 @pytest.mark.parametrize(
-    "request_includes_filename, filename, in_frontend_url, expected_filename, sending_method", [
+    "request_includes_filename, filename, in_api_url, expected_filename, sending_method", [
         (True, 'custom_filename.pdf', True, 'custom_filename.pdf', 'attach'),
         (False, 'whatever', False, None, 'link'),
     ]
 )
-def test_document_upload_returns_link_to_frontend(
+def test_document_upload_returns_link_to_api(
     client,
     store,
     antivirus,
     request_includes_filename,
     filename,
-    in_frontend_url,
+    in_api_url,
     expected_filename,
     sending_method,
 ):
@@ -42,7 +42,7 @@ def test_document_upload_returns_link_to_frontend(
         'sending_method': sending_method
     }
 
-    frontend_url_parts = [
+    api_url_parts = [
         'http://localhost:7000',
         '/d/AAAAAAAAAAAAAAAAAAAAAA',
         '/_____________________w',
@@ -54,8 +54,8 @@ def test_document_upload_returns_link_to_frontend(
         data['filename'] = filename
         expected_extension = filename.split('.')[-1]
 
-    if in_frontend_url:
-        frontend_url_parts.append(f'&filename={filename}')
+    if in_api_url:
+        api_url_parts.append(f'&filename={filename}')
 
     response = client.post(
         '/services/00000000-0000-0000-0000-000000000000/documents',
@@ -67,7 +67,7 @@ def test_document_upload_returns_link_to_frontend(
     assert response.json == {
         'document': {
             'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-            'url': ''.join(frontend_url_parts),
+            'url': ''.join(api_url_parts),
             'direct_file_url': ''.join([
                 'http://document-download.test',
                 '/services/00000000-0000-0000-0000-000000000000',
