@@ -31,6 +31,7 @@ class Config(metaclass=MetaFlaskEnv):
 
     HTTP_SCHEME = os.getenv("HTTP_SCHEME", "http")
     FRONTEND_HOSTNAME = os.getenv("FRONTEND_HOSTNAME", "localhost:7001")
+    BACKEND_HOSTNAME = os.getenv("BACKEND_HOSTNAME", "localhost:7000")
 
     NOTIFY_APP_NAME = os.getenv("NOTIFY_APP_NAME", "Name")
     NOTIFY_LOG_PATH = os.getenv("NOTIFY_LOG_PATH", "application.log")
@@ -58,6 +59,8 @@ class Test(Config):
     ANTIVIRUS_API_KEY = 'test-antivirus-secret'
 
     FRONTEND_HOSTNAME = 'localhost:7001'
+    BACKEND_HOSTNAME = 'localhost:7000'
+
     MLWR_HOST = "localhost"
 
 
