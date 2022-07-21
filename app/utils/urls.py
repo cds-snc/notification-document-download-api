@@ -26,3 +26,20 @@ def get_frontend_download_url(service_id, document_id, key, filename):
     )
 
     return urlunsplit([scheme, netloc, path, query, None])
+
+
+def get_api_download_url(service_id, document_id, key, filename):
+    scheme = current_app.config['HTTP_SCHEME']
+    url = url_for(
+        'download.download_document_b64',
+        service_id=service_id,
+        document_id=document_id,
+        _external=True
+    )
+    url = url.split("://")[-1]
+    query_params = {'key': bytes_to_base64(key), 'filename': filename}
+    query = urlencode(
+        {k: v for k, v in query_params.items() if v},
+        quote_via=quote
+    )
+    return urlunsplit([scheme, url, "", query, None])
