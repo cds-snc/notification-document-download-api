@@ -8,6 +8,17 @@ SAMPLE_KEY = bytes(range(32))
 SAMPLE_B64 = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8'
 
 
+def test_get_api_download_url_returns_frontend_url_without_filename(app):
+    assert get_api_download_url(
+        service_id=UUID(int=0), document_id=UUID(int=1), key=SAMPLE_KEY,
+        filename=None
+    ) == 'http://localhost:7000/d/{}/{}?key={}'.format(
+        'AAAAAAAAAAAAAAAAAAAAAA',
+        'AAAAAAAAAAAAAAAAAAAAAQ',
+        SAMPLE_B64
+    )
+
+
 def test_get_api_download_url_returns_frontend_url_with_filename(app):
     assert get_api_download_url(
         service_id=UUID(int=0), document_id=UUID(int=1), key=SAMPLE_KEY,
