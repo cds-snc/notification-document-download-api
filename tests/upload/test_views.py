@@ -43,7 +43,7 @@ def test_document_upload_returns_link_to_frontend(
     }
 
     frontend_url_parts = [
-        'http://localhost:7001',
+        'http://localhost:7000',
         '/d/AAAAAAAAAAAAAAAAAAAAAA',
         '/_____________________w',
         '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
