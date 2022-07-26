@@ -37,7 +37,7 @@ def download_document(service_id, document_id):
         mimetype=document['mimetype'],
         # as_attachment can only be `True` if the filename is set
         as_attachment=(filename is not None),
-        attachment_filename=filename,
+        download_name=filename,
     ))
     response.headers['Content-Length'] = document['size']
     response.headers['X-Robots-Tag'] = 'noindex, nofollow'

@@ -1,7 +1,7 @@
 # Run `make freeze-requirements` to update requirements.txt
 # with package version changes made in requirements-app.txt
 
-Flask==1.0.3
+Flask==2.0.3
 Flask-Env==2.0.0
 
 python-dotenv==0.10.3
@@ -14,7 +14,7 @@ eventlet==0.28.0
 
 awscli-cwlogs>=1.4.6,<1.5
 
-git+https://github.com/cds-snc/notifier-utils.git@46.3.0#egg=notifications-utils
+git+https://github.com/cds-snc/notifier-utils.git@48.0.0#egg=notifications-utils
 
 socketio-client==0.5.6
 requests

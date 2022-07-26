@@ -37,7 +37,7 @@ def test_document_download(client, store, endpoint):
     assert response.get_data() == b'PDF document contents'
     assert dict(response.headers) == {
         'Cache-Control': mock.ANY,
-        'Expires': mock.ANY,
+        'Date': mock.ANY,
         'Content-Length': '100',
         'Content-Type': 'application/pdf',
         'X-B3-SpanId': 'None',
@@ -73,7 +73,7 @@ def test_document_download_with_filename(client, store):
     assert response.get_data() == b'PDF document contents'
     assert dict(response.headers) == {
         'Cache-Control': mock.ANY,
-        'Expires': mock.ANY,
+        'Date': mock.ANY,
         'Content-Length': '100',
         'Content-Type': 'application/pdf',
         'X-B3-SpanId': 'None',
