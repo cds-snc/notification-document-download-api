@@ -10,8 +10,8 @@ python-magic==0.4.15
 
 # PaaS
 
-gunicorn==20.0.4
-eventlet==0.28.0
+gunicorn==20.1.0
+eventlet==0.30.2
 
 awscli-cwlogs>=1.4.6,<1.5
 
@@ -49,7 +49,6 @@ Jinja2==3.1.2
 jmespath==0.10.0
 MarkupSafe==2.0.1
 mistune==0.8.4
-monotonic==1.6
 orderedset==2.0.3
 packaging==21.3
 phonenumbers==8.12.21
@@ -69,7 +68,7 @@ s3transfer==0.4.2
 six==1.16.0
 smartypants==2.0.1
 statsd==3.3.0
-urllib3==1.26.10
+urllib3==1.26.11
 webencodings==0.5.1
 websocket-client==1.3.3
 Werkzeug==2.0.2
