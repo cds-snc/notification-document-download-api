@@ -13,7 +13,7 @@ def download_document(service_id, document_id):
         return jsonify(error='Missing decryption key'), 400
 
     filename = request.args.get('filename')
-    sending_method = request.args.get('sending_method')
+    sending_method = request.args.get('sending_method', "link")
 
     try:
         key = base64_to_bytes(request.args['key'])
@@ -51,7 +51,7 @@ def download_document_b64(service_id, document_id):
         abort(404)
 
     filename = request.args.get('filename')
-    sending_method = request.args.get('sending_method')
+    sending_method = request.args.get('sending_method', 'link')
 
     try:
         key = base64_to_bytes(request.args['key'])
