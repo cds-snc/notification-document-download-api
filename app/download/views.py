@@ -44,6 +44,7 @@ def download_document(service_id, document_id):
 
     return response
 
+
 @download_blueprint.route('/d/<base64_uuid:service_id>/<base64_uuid:document_id>', methods=['GET'])
 def download_document_b64(service_id, document_id):
     if 'key' not in request.args:
