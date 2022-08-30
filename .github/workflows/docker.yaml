@@ -74,3 +74,9 @@ jobs:
         docker_image: $DOCKER_SLUG:${GITHUB_SHA::7}
         project_name: notification-document-download-api/docker
         project_type: docker        
+
+    - name: Notify Slack channel if this job failed
+      if: ${{ failure() }}
+      run: |
+        json="{'text':'<!here> CI is failing in <https://github.com/cds-snc/notification-document-download-api/|notification-document-download-api> !'}"
+        curl -X POST -H 'Content-type: application/json' --data "$json"  ${{ secrets.SLACK_WEBHOOK }}
