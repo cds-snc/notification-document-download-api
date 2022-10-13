@@ -15,6 +15,7 @@ class Config(metaclass=MetaFlaskEnv):
 
     ALLOWED_MIME_TYPES = [
         'application/pdf',
+        'application/CDFV2',
         'text/csv',
         'text/plain',
         'application/msword',  # .doc

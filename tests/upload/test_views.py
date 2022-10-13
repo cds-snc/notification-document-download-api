@@ -175,7 +175,7 @@ def test_document_upload_unknown_type(client):
 
     assert response.status_code == 400
     assert response.json == {
-        'error': "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']" # noqa
+        'error': "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'application/CDFV2', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']" # noqa
     }
 
 
