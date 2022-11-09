@@ -9,6 +9,6 @@ pytest-cov==3.0.0
 
 requests-mock==1.9.3
 
-coveralls==1.11.0
+coveralls==1.11.1
 
 jinja2-cli[yaml]==0.8.2
