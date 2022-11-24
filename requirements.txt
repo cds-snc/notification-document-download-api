@@ -15,7 +15,8 @@ eventlet==0.30.2
 
 awscli-cwlogs==1.4.6
 
-git+https://github.com/cds-snc/notifier-utils.git@48.0.0#egg=notifications-utils
+# git+https://github.com/cds-snc/notifier-utils.git@48.0.0#egg=notifications-utils
+git+https://github.com/cds-snc/notifier-utils.git@python-3.10#egg=notifications-utils
 
 socketio-client==0.5.6
 requests
@@ -28,10 +29,10 @@ git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=as
 ## The following requirements were added by pip freeze:
 async-timeout==4.0.2
 awscli==1.19.58
-bleach==3.3.0
+bleach==3.3.1
 boto3==1.17.58
 botocore==1.20.58
-cachetools==4.2.1
+cachetools==4.2.4
 certifi==2022.9.24
 cffi==1.15.1
 chardet==4.0.0
@@ -51,7 +52,7 @@ MarkupSafe==2.0.1
 mistune==0.8.4
 orderedset==2.0.3
 packaging==21.3
-phonenumbers==8.12.21
+phonenumbers==8.12.57
 py-w3c==0.3.1
 pyasn1==0.4.8
 pycparser==2.21
@@ -59,7 +60,7 @@ pyOpenSSL==22.1.0
 pyparsing==3.0.9
 PyPDF2==1.26.0
 python-dateutil==2.8.2
-python-json-logger==2.0.1
+python-json-logger==2.0.4
 pytz==2021.1
 PyYAML==5.4.1
 redis==4.3.4
