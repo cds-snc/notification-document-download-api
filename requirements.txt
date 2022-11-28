@@ -2,74 +2,70 @@
 # Run `make freeze-requirements` to update requirements.txt
 # with package version changes made in requirements-app.txt
 
-Flask==2.0.3
+Flask==2.2.2
 Flask-Env==2.0.0
 
-python-dotenv==0.10.3
+python-dotenv==0.21.0
 python-magic==0.4.27
 
 # PaaS
 
 gunicorn==20.1.0
-eventlet==0.30.2
+eventlet==0.33.2
 
 awscli-cwlogs==1.4.6
 
-git+https://github.com/cds-snc/notifier-utils.git@48.0.0#egg=notifications-utils
-
-socketio-client==0.5.6
+#git+https://github.com/cds-snc/notifier-utils.git@48.3.0#egg=notifications-utils
+git+https://github.com/cds-snc/notifier-utils.git@66de4f46ae18207ad36c16fbb84f5c1e032db017#egg=notifications-utils # temporarily adding the upgraded utils all-minor PR
+socketio-client==0.7.2
 requests
 requests[security]
 pycryptodome
 
-git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
+#git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
 
 
 ## The following requirements were added by pip freeze:
 async-timeout==4.0.2
-awscli==1.19.58
-bleach==3.3.0
-boto3==1.17.58
-botocore==1.20.58
-cachetools==4.2.1
+awscli==1.27.10
+bleach==3.3.1
+boto3==1.26.10
+botocore==1.29.10
+cachetools==4.2.4
 certifi==2022.9.24
-cffi==1.15.1
-chardet==4.0.0
+charset-normalizer==2.1.1
 click==8.1.3
-colorama==0.4.3
-cryptography==38.0.3
-Deprecated==1.2.13
-dnspython==1.16.0
-docutils==0.15.2
+colorama==0.4.4
+dnspython==2.2.1
+docutils==0.16
 flask-redis==0.4.0
 greenlet==2.0.1
-idna==2.10
-itsdangerous==2.0.1
+idna==3.4
+importlib-metadata==5.1.0
+itsdangerous==2.1.2
 Jinja2==3.1.2
-jmespath==0.10.0
-MarkupSafe==2.0.1
+jmespath==1.0.1
+MarkupSafe==2.1.1
 mistune==0.8.4
 orderedset==2.0.3
 packaging==21.3
-phonenumbers==8.12.21
+phonenumbers==8.13.0
 py-w3c==0.3.1
 pyasn1==0.4.8
-pycparser==2.21
-pyOpenSSL==22.1.0
 pyparsing==3.0.9
-PyPDF2==1.26.0
+PyPDF2==1.28.6
 python-dateutil==2.8.2
-python-json-logger==2.0.1
-pytz==2021.1
+python-json-logger==2.0.4
+pytz==2021.3
 PyYAML==5.4.1
-redis==4.3.4
+redis==4.3.5
 rsa==4.7.2
-s3transfer==0.4.2
+s3transfer==0.6.0
 six==1.16.0
 smartypants==2.0.1
 statsd==3.3.0
-urllib3==1.26.12
+urllib3==1.26.13
 webencodings==0.5.1
 websocket-client==1.4.2
-Werkzeug==2.0.2
-wrapt==1.14.1
+Werkzeug==2.2.2
+zipp==3.11.0

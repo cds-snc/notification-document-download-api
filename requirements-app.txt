@@ -14,12 +14,12 @@ eventlet==0.33.2
 
 awscli-cwlogs==1.4.6
 
-git+https://github.com/cds-snc/notifier-utils.git@48.3.0#egg=notifications-utils
-
+#git+https://github.com/cds-snc/notifier-utils.git@48.3.0#egg=notifications-utils
+git+https://github.com/cds-snc/notifier-utils.git@66de4f46ae18207ad36c16fbb84f5c1e032db017#egg=notifications-utils # temporarily adding the upgraded utils all-minor PR
 socketio-client==0.7.2
 requests
 requests[security]
 pycryptodome
 
-git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
+#git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
 
