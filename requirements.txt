@@ -17,13 +17,10 @@ awscli-cwlogs==1.4.6
 
 #git+https://github.com/cds-snc/notifier-utils.git@48.3.0#egg=notifications-utils
 git+https://github.com/cds-snc/notifier-utils.git@66de4f46ae18207ad36c16fbb84f5c1e032db017#egg=notifications-utils # temporarily adding the upgraded utils all-minor PR
-socketio-client==0.5.6
+
 requests
 requests[security]
 pycryptodome
-
-git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
-
 
 ## The following requirements were added by pip freeze:
 async-timeout==4.0.2
@@ -66,6 +63,5 @@ smartypants==2.0.1
 statsd==3.3.0
 urllib3==1.26.13
 webencodings==0.5.1
-websocket-client==1.4.2
 Werkzeug==2.2.2
 zipp==3.11.0
