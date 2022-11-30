@@ -33,4 +33,4 @@ RUN pip install --upgrade pip
 
 COPY .devcontainer/scripts/notify-dev-entrypoint.sh /usr/local/bin/
 
-EXPOSE 6012
+EXPOSE 7000
