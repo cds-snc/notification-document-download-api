@@ -38,8 +38,6 @@ def upload_document(service_id):
 
     sending_method = request.form.get('sending_method')
 
-    sid = False
-
     document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
 
     return jsonify(
