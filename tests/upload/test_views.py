@@ -70,7 +70,6 @@ def test_document_upload_returns_link_to_api(
                 '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
                 f'&sending_method={sending_method}'
             ]),
-            'mlwr_sid': 'abcd',
             'filename': expected_filename,
             'sending_method': sending_method,
             'mime_type': 'application/pdf',
