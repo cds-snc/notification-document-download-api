@@ -11,11 +11,6 @@ def store(mocker):
     return mocker.patch('app.upload.views.document_store')
 
 
-@pytest.fixture
-def antivirus(mocker):
-    return mocker.patch('app.upload.views.upload_to_mlwr')
-
-
 @pytest.mark.parametrize(
     "request_includes_filename, filename, in_api_url, expected_filename, sending_method", [
         (True, 'custom_filename.pdf', True, 'custom_filename.pdf', 'attach'),

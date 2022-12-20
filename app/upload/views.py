@@ -4,7 +4,6 @@ from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store
 from app.utils import get_mime_type
-from app.utils.mlwr import upload_to_mlwr
 from app.utils.authentication import check_auth
 from app.utils.urls import get_direct_file_url, get_api_download_url
 
@@ -39,10 +38,7 @@ def upload_document(service_id):
 
     sending_method = request.form.get('sending_method')
 
-    if current_app.config["MLWR_HOST"]:
-        sid = upload_to_mlwr(file_content)
-    else:
-        sid = False
+    sid = False
 
     document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
 
@@ -62,7 +58,6 @@ def upload_document(service_id):
                 key=document['encryption_key'],
                 filename=filename,
             ),
-            'mlwr_sid': sid,
             'filename': filename,
             'sending_method': sending_method,
             'mime_type': mimetype,
