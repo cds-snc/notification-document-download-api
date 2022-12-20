@@ -2,7 +2,7 @@ from flask import Blueprint, abort, current_app, jsonify, make_response, request
 from notifications_utils.base64_uuid import base64_to_bytes
 
 from app import document_store
-from app.utils.store import DocumentStoreError
+from app.utils.store import DocumentStoreError, MaliciousContentError
 
 download_blueprint = Blueprint('download', __name__, url_prefix='')
 
@@ -25,6 +25,15 @@ def download_document(service_id, document_id):
     except DocumentStoreError as e:
         current_app.logger.info(
             'Failed to download document: {}'.format(e),
+            extra={
+                'service_id': service_id,
+                'document_id': document_id,
+            }
+        )
+        return jsonify(error=str(e)), 400
+    except MaliciousContentError as e:
+        current_app.logger.info(
+            'Malicious content detected, refused to download document: {}'.format(e),
             extra={
                 'service_id': service_id,
                 'document_id': document_id,
@@ -63,6 +72,15 @@ def download_document_b64(service_id, document_id):
     except DocumentStoreError as e:
         current_app.logger.info(
             'Failed to download document: {}'.format(e),
+            extra={
+                'service_id': service_id,
+                'document_id': document_id,
+            }
+        )
+        abort(404)
+    except MaliciousContentError as e:
+        current_app.logger.info(
+            'Malicious content detected, refused to download document: {}'.format(e),
             extra={
                 'service_id': service_id,
                 'document_id': document_id,

@@ -8,6 +8,9 @@ from botocore.exceptions import ClientError as BotoClientError
 class DocumentStoreError(Exception):
     pass
 
+class MaliciousContentError(Exception):
+    pass
+
 
 class DocumentStore:
     def __init__(self, bucket=None):
@@ -50,6 +53,23 @@ class DocumentStore:
                 SSECustomerKey=decryption_key,
                 SSECustomerAlgorithm='AES256'
             )
+
+        except BotoClientError as e:
+            raise DocumentStoreError(e.response['Error'])
+        
+        try:
+            response = self.s3.get_object_tagging(
+                Bucket=self.bucket,
+                Key=self.get_document_key(service_id, document_id, sending_method)
+            )
+            tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
+
+            # todo: fix this - I don't think "bad" is the correct status
+            # example: https://github.com/cds-snc/share-files-securely/blob/main/app/app/models/File.py#L25
+            if tag_dict["av-status"] == "bad":
+                error_msg = f"Malicious content detected - service_id: {service_id}, \
+                    document_id: {document_id}, sending_method: {sending_method}"
+                raise MaliciousContentError(error_msg)
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response['Error'])
