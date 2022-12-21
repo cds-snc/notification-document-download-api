@@ -3,14 +3,20 @@ import uuid
 
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
-
+from scan_files import ScanVerdicts
 
 class DocumentStoreError(Exception):
     pass
 
-class MaliciousContentError(Exception):
+class SuspiciousContentError(Exception):
     pass
 
+class MaliciousContentError(Exception):
+    pass
+class ScanInProgressError(Exception):
+    pass
+
+BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
 
 class DocumentStore:
     def __init__(self, bucket=None):
@@ -64,9 +70,17 @@ class DocumentStore:
             )
             tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
 
-            # todo: fix this - I don't think "bad" is the correct status
-            # example: https://github.com/cds-snc/share-files-securely/blob/main/app/app/models/File.py#L25
-            if tag_dict["av-status"] == "bad":
+            if tag_dict["av-status"] == ScanVerdicts.IN_PROGRESS.value:
+                error_msg = f"Content scanning is in progress - service_id: {service_id}, \
+                    document_id: {document_id}, sending_method: {sending_method}"
+                raise ScanInProgressError(error_msg)
+
+            if tag_dict["av-status"] == ScanVerdicts.SUSPICIOUS.value:
+                error_msg = f"Suspicious content detected - service_id: {service_id}, \
+                    document_id: {document_id}, sending_method: {sending_method}"
+                raise SuspiciousContentError(error_msg)
+            
+            if tag_dict["av-status"] == ScanVerdicts.MALICIOUS.value:
                 error_msg = f"Malicious content detected - service_id: {service_id}, \
                     document_id: {document_id}, sending_method: {sending_method}"
                 raise MaliciousContentError(error_msg)
