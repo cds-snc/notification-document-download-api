@@ -2,7 +2,13 @@ from flask import Blueprint, abort, current_app, jsonify, make_response, request
 from notifications_utils.base64_uuid import base64_to_bytes
 
 from app import document_store
-from app.utils.store import DocumentStoreError, MaliciousContentError
+from app.utils.store import (
+    DocumentStoreError,
+    MaliciousContentError,
+    ScanInProgressError,
+    SuspiciousContentError,
+    UnexpectedAvStatusError
+)
 
 download_blueprint = Blueprint('download', __name__, url_prefix='')
 
@@ -78,15 +84,38 @@ def download_document_b64(service_id, document_id):
             }
         )
         abort(404)
-    except MaliciousContentError as e:
+    except ScanInProgressError as e:
         current_app.logger.info(
-            'Malicious content detected, refused to download document: {}'.format(e),
+            e,
+            extra={
+                'service_id': service_id,
+                'document_id': document_id,
+            }
+        )
+        # Todo: figure out what to do here. Should we wait and re-check the status?
+        # or just send the error and let the client re-try?
+        abort(404)
+
+    except (MaliciousContentError, SuspiciousContentError) as e:
+        current_app.logger.info(
+            'Refused to download document: {}'.format(e),
             extra={
                 'service_id': service_id,
                 'document_id': document_id,
             }
         )
         abort(404)
+    except UnexpectedAvStatusError as e:
+        # This probably indicates an error with the malicious content
+        # scanner. Don't prevent the attachment from being sent in this
+        # case, but do log the error.
+        current_app.logger.info(
+            e,
+            extra={
+                'service_id': service_id,
+                'document_id': document_id,
+            }
+        )
 
     response = make_response(send_file(
         document['body'],

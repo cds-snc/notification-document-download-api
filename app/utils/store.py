@@ -13,7 +13,11 @@ class SuspiciousContentError(Exception):
 
 class MaliciousContentError(Exception):
     pass
+
 class ScanInProgressError(Exception):
+    pass
+
+class UnexpectedAvStatusError(Exception):
     pass
 
 BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
@@ -69,21 +73,19 @@ class DocumentStore:
                 Key=self.get_document_key(service_id, document_id, sending_method)
             )
             tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
+            av_status = tag_dict["av-status"]
+            if av_status == ScanVerdicts.IN_PROGRESS.value:
+                raise ScanInProgressError("Content scanning is in progress")
 
-            if tag_dict["av-status"] == ScanVerdicts.IN_PROGRESS.value:
-                error_msg = f"Content scanning is in progress - service_id: {service_id}, \
-                    document_id: {document_id}, sending_method: {sending_method}"
-                raise ScanInProgressError(error_msg)
-
-            if tag_dict["av-status"] == ScanVerdicts.SUSPICIOUS.value:
-                error_msg = f"Suspicious content detected - service_id: {service_id}, \
-                    document_id: {document_id}, sending_method: {sending_method}"
-                raise SuspiciousContentError(error_msg)
+            if av_status == ScanVerdicts.SUSPICIOUS.value:
+                raise SuspiciousContentError("Suspicious content detected")
             
-            if tag_dict["av-status"] == ScanVerdicts.MALICIOUS.value:
-                error_msg = f"Malicious content detected - service_id: {service_id}, \
-                    document_id: {document_id}, sending_method: {sending_method}"
-                raise MaliciousContentError(error_msg)
+            if av_status == ScanVerdicts.MALICIOUS.value:
+                raise MaliciousContentError("Malicious content detected")
+
+            if av_status != ScanVerdicts.CLEAN.value:
+                raise UnexpectedAvStatusError(f"Unexpected av-status {av_status}")
+
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response['Error'])
