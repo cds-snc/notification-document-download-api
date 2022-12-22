@@ -56,7 +56,6 @@ def upload_document(service_id):
                 key=document['encryption_key'],
                 filename=filename,
             ),
-            'scan-status': "pending",
             'filename': filename,
             'sending_method': sending_method,
             'mime_type': mimetype,

@@ -37,9 +37,18 @@ def download_document(service_id, document_id):
             }
         )
         return jsonify(error=str(e)), 400
-    except MaliciousContentError as e:
+    except (MaliciousContentError, SuspiciousContentError) as e:
         current_app.logger.info(
             'Malicious content detected, refused to download document: {}'.format(e),
+            extra={
+                'service_id': service_id,
+                'document_id': document_id,
+            }
+        )
+        return jsonify(error=str(e)), 400
+    except ScanInProgressError as e:
+        current_app.logger.info(
+            'Scan in progress, refused to download document: {}'.format(e),
             extra={
                 'service_id': service_id,
                 'document_id': document_id,
@@ -92,9 +101,9 @@ def download_document_b64(service_id, document_id):
                 'document_id': document_id,
             }
         )
-        # Todo: figure out what to do here. Should we wait and re-check the status?
-        # or just send the error and let the client re-try?
-        abort(404)
+        # Send a "428 Precondition Required" response, let client retry
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/428
+        abort(428)
 
     except (MaliciousContentError, SuspiciousContentError) as e:
         current_app.logger.info(
@@ -104,7 +113,8 @@ def download_document_b64(service_id, document_id):
                 'document_id': document_id,
             }
         )
-        abort(404)
+        # Send a 403 Forbidden response
+        abort(403)
     except UnexpectedAvStatusError as e:
         # This probably indicates an error with the malicious content
         # scanner. Don't prevent the attachment from being sent in this
