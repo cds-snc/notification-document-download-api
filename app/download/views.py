@@ -115,17 +115,6 @@ def download_document_b64(service_id, document_id):
         )
         # Send a 403 Forbidden response
         abort(403)
-    except UnexpectedAvStatusError as e:
-        # This probably indicates an error with the malicious content
-        # scanner. Don't prevent the attachment from being sent in this
-        # case, but do log the error.
-        current_app.logger.info(
-            e,
-            extra={
-                'service_id': service_id,
-                'document_id': document_id,
-            }
-        )
 
     response = make_response(send_file(
         document['body'],

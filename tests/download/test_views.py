@@ -146,7 +146,7 @@ def test_document_download_document_store_error(client, store):
         ['download.download_document_b64', 403, SuspiciousContentError()],
     ],
 )
-def test_scan_in_progress_error(client, store, endpoint, response_code, error):
+def test_content_scan_errors(client, store, endpoint, response_code, error):
     store.get.side_effect = error
     response = client.get(
         url_for(
@@ -156,4 +156,5 @@ def test_scan_in_progress_error(client, store, endpoint, response_code, error):
             key='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
         )
     )
+
     assert response.status_code == response_code

@@ -18,9 +18,6 @@ class MaliciousContentError(Exception):
 class ScanInProgressError(Exception):
     pass
 
-class UnexpectedAvStatusError(Exception):
-    pass
-
 BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
 
 class DocumentStore:
@@ -83,10 +80,6 @@ class DocumentStore:
             
             if av_status == ScanVerdicts.MALICIOUS.value:
                 raise MaliciousContentError("Malicious content detected")
-
-            if av_status != ScanVerdicts.CLEAN.value:
-                raise UnexpectedAvStatusError(f"Unexpected av-status {av_status}")
-
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response['Error'])
