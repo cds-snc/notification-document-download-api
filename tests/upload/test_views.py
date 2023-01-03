@@ -20,7 +20,6 @@ def store(mocker):
 def test_document_upload_returns_link_to_api(
     client,
     store,
-    antivirus,
     request_includes_filename,
     filename,
     in_api_url,
@@ -31,7 +30,6 @@ def test_document_upload_returns_link_to_api(
         'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         'encryption_key': bytes(32),
     }
-    antivirus.return_value = "abcd"
     data = {
         'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf'),
         'sending_method': sending_method
@@ -93,7 +91,6 @@ def test_document_upload_returns_link_to_api(
 def test_document_upload_returns_size_and_mime(
     client,
     store,
-    antivirus,
     content,
     filename,
     expected_extension,
@@ -104,7 +101,6 @@ def test_document_upload_returns_size_and_mime(
         'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         'encryption_key': bytes(32),
     }
-    antivirus.return_value = "abcd"
 
     response = client.post(
         '/services/00000000-0000-0000-0000-000000000000/documents',
@@ -181,7 +177,7 @@ def test_document_upload_unknown_type(client):
     ("", 400),
 ])
 def test_document_upload_extra_mime_type(
-    app, client, mocker, store, antivirus, extra_mime_types,
+    app, client, mocker, store, extra_mime_types,
     expected_status_code
 ):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
@@ -191,7 +187,6 @@ def test_document_upload_extra_mime_type(
         'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         'encryption_key': bytes(32),
     }
-    antivirus.return_value = "abcd"
 
     with set_config(app, EXTRA_MIME_TYPES=extra_mime_types):
         response = client.post(
@@ -204,13 +199,11 @@ def test_document_upload_extra_mime_type(
         assert response.status_code == expected_status_code
 
 
-def test_document_file_size_just_right(client, store, antivirus):
+def test_document_file_size_just_right(client, store):
     store.put.return_value = {
         'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         'encryption_key': bytes(32),
     }
-
-    antivirus.return_value = "abcd"
 
     response = client.post(
         '/services/12345678-1111-1111-1111-123456789012/documents',
