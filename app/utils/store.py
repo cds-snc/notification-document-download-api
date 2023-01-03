@@ -3,7 +3,8 @@ import uuid
 
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
-from scan_files import ScanVerdicts
+
+from app.utils.scan_files import ScanVerdicts
 
 class DocumentStoreError(Exception):
     pass
