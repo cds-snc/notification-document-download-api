@@ -6,8 +6,7 @@ from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
     ScanInProgressError,
-    SuspiciousContentError,
-    UnexpectedAvStatusError
+    SuspiciousContentError
 )
 
 download_blueprint = Blueprint('download', __name__, url_prefix='')
