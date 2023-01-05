@@ -23,7 +23,6 @@ BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value
 class DocumentStore:
     def __init__(self, bucket=None):
         self.s3 = boto3.client("s3")
-        boto3.client("s3").put
         self.bucket = bucket
 
     def init_app(self, app):
