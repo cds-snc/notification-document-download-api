@@ -57,14 +57,13 @@ def upload_document(service_id):
         """
         scan_verdict = get_scan_verdict(file_content, mimetype)
         document_store.update_av_status(
-            service_id,
-            file_content,
+            service_id=service_id,
+            document_id=document['id'],
             sending_method=sending_method,
-            mimetype=mimetype,
             scan_verdict=scan_verdict
         )
 
-    if current_app.config["SCAN_FILES_HOST_NAME"]:
+    if current_app.config["ANTIVIRUS_API_HOST"]:
         asyncio.run(scan_files_process())
 
     return jsonify(

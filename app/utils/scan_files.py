@@ -18,9 +18,9 @@ class ScanVerdicts(Enum):
 
 def get_scan_verdict(file_content, mimetype) -> ScanVerdicts:
     resp = requests.post(
-        f"{current_app.config['SCAN_FILES_HOST_NAME']}/clamav",
+        f"{current_app.config['ANTIVIRUS_API_HOST']}/clamav",
         files = {'file': ("uploaded_file", file_content, mimetype)},
-        headers={"Authorization": current_app.config["SCAN_FILES_API_KEY"]},
+        headers={"Authorization": current_app.config["ANTIVIRUS_API_KEY"]},
     )
     data = json.loads(resp.text)
     try:
