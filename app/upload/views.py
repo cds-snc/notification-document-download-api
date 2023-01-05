@@ -1,3 +1,4 @@
+import asyncio
 import pathlib
 
 from flask import Blueprint, current_app, jsonify, request
@@ -6,6 +7,7 @@ from app import document_store
 from app.utils import get_mime_type
 from app.utils.authentication import check_auth
 from app.utils.urls import get_direct_file_url, get_api_download_url
+from app.utils.scan_files import ScanVerdicts, get_scan_verdict
 
 upload_blueprint = Blueprint('upload', __name__, url_prefix='')
 upload_blueprint.before_request(check_auth)
@@ -38,7 +40,32 @@ def upload_document(service_id):
 
     sending_method = request.form.get('sending_method')
 
-    document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
+    document = document_store.put(
+        service_id,
+        file_content,
+        sending_method=sending_method,
+        mimetype=mimetype,
+        scan_verdict=ScanVerdicts.IN_PROGRESS
+    )
+
+    async def scan_files_process():
+        """
+        This function is an async process that will:
+        - send the file to the scan-files API
+        - recieve a verdict
+        - update the av-status tag in on the corresponding object in S3
+        """
+        scan_verdict = get_scan_verdict(file_content, mimetype)
+        document_store.update_av_status(
+            service_id,
+            file_content,
+            sending_method=sending_method,
+            mimetype=mimetype,
+            scan_verdict=scan_verdict
+        )
+
+    if current_app.config["SCAN_FILES_HOST_NAME"]:
+        asyncio.run(scan_files_process())
 
     return jsonify(
         status='ok',
