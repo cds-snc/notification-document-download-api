@@ -14,10 +14,11 @@ upload_blueprint.before_request(check_auth)
 
 @upload_blueprint.route('/services/<uuid:service_id>/documents', methods=['POST'])
 def upload_document(service_id):
-    if 'document' not in request.files:
+    try:
+        mimetype = get_mime_type(request.files['document'])
+    except:
         return jsonify(error='No document upload'), 400
 
-    mimetype = get_mime_type(request.files['document'])
     if not mime_type_is_allowed(mimetype, service_id):
         return jsonify(
             error="Unsupported document type '{}'. Supported types are: {}".format(
