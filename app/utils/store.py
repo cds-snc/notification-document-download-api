@@ -17,9 +17,7 @@ class DocumentStore:
     def init_app(self, app):
         self.bucket = app.config["DOCUMENTS_BUCKET"]
 
-    def put(
-        self, service_id, document_stream, sending_method, mimetype="application/pdf"
-    ):
+    def put(self, service_id, document_stream, sending_method, mimetype="application/pdf"):
         """
         returns dict {'id': 'some-uuid', 'encryption_key': b'32 byte encryption key'}
         """

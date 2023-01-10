@@ -13,9 +13,7 @@ def app():
     class TestClient(FlaskClient):
         def open(self, *args, **kwargs):
             kwargs["headers"] = {
-                "Authorization": "Bearer {}".format(
-                    app.config["AUTH_TOKENS"].split(":")[0]
-                ),
+                "Authorization": "Bearer {}".format(app.config["AUTH_TOKENS"].split(":")[0]),
                 **(kwargs.get("headers", {})),
             }
 

@@ -11,9 +11,7 @@ class Config(metaclass=MetaFlaskEnv):
     SECRET_KEY = os.getenv("SECRET_KEY", "secret-key")
     AUTH_TOKENS = os.getenv("AUTH_TOKENS", "auth-token")
 
-    DOCUMENTS_BUCKET = os.getenv(
-        "DOCUMENTS_BUCKET", "development-notification-canada-ca-document-download"
-    )
+    DOCUMENTS_BUCKET = os.getenv("DOCUMENTS_BUCKET", "development-notification-canada-ca-document-download")
 
     ALLOWED_MIME_TYPES = [
         "application/pdf",

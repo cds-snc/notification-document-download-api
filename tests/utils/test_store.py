@@ -46,18 +46,14 @@ def test_put_document(store):
 
     assert ret == {
         "id": Matcher("UUID length match", lambda x: len(x) == 36),
-        "encryption_key": Matcher(
-            "32 bytes", lambda x: len(x) == 32 and isinstance(x, bytes)
-        ),
+        "encryption_key": Matcher("32 bytes", lambda x: len(x) == 32 and isinstance(x, bytes)),
     }
 
     store.s3.put_object.assert_called_once_with(
         Body=mock.ANY,
         Bucket="test-bucket",
         ContentType="application/pdf",
-        Key=Matcher(
-            "document key", lambda x: x.startswith("service-id/") and len(x) == 11 + 36
-        ),
+        Key=Matcher("document key", lambda x: x.startswith("service-id/") and len(x) == 11 + 36),
         SSECustomerKey=ret["encryption_key"],
         SSECustomerAlgorithm="AES256",
     )
@@ -68,9 +64,7 @@ def test_put_document_attach_tmp_dir(store):
 
     assert ret == {
         "id": Matcher("UUID length match", lambda x: len(x) == 36),
-        "encryption_key": Matcher(
-            "32 bytes", lambda x: len(x) == 32 and isinstance(x, bytes)
-        ),
+        "encryption_key": Matcher("32 bytes", lambda x: len(x) == 32 and isinstance(x, bytes)),
     }
 
     store.s3.put_object.assert_called_once_with(
@@ -103,9 +97,7 @@ def test_get_document(store):
 
 
 def test_get_document_attach_tmp_dir(store):
-    assert store.get(
-        "service-id", "document-id", bytes(32), sending_method="attach"
-    ) == {
+    assert store.get("service-id", "document-id", bytes(32), sending_method="attach") == {
         "body": mock.ANY,
         "mimetype": "application/pdf",
         "size": 100,

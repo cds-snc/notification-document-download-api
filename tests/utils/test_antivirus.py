@@ -40,12 +40,8 @@ def test_scan_document(antivirus):
 
 
 def test_should_raise_for_status(antivirus):
-    with pytest.raises(
-        AntivirusError
-    ) as excinfo, requests_mock.Mocker() as request_mock:
-        request_mock.post(
-            "https://antivirus/scan", json={"error": "Antivirus error"}, status_code=400
-        )
+    with pytest.raises(AntivirusError) as excinfo, requests_mock.Mocker() as request_mock:
+        request_mock.post("https://antivirus/scan", json={"error": "Antivirus error"}, status_code=400)
 
         antivirus.scan(io.BytesIO(b"document"))
 
@@ -54,12 +50,8 @@ def test_should_raise_for_status(antivirus):
 
 
 def test_should_raise_for_connection_errors(antivirus):
-    with pytest.raises(
-        AntivirusError
-    ) as excinfo, requests_mock.Mocker() as request_mock:
-        request_mock.post(
-            "https://antivirus/scan", exc=requests.exceptions.ConnectTimeout
-        )
+    with pytest.raises(AntivirusError) as excinfo, requests_mock.Mocker() as request_mock:
+        request_mock.post("https://antivirus/scan", exc=requests.exceptions.ConnectTimeout)
 
         antivirus.scan(io.BytesIO(b"document"))
 

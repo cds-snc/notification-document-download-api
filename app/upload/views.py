@@ -41,9 +41,7 @@ def upload_document(service_id):
 
     sending_method = request.form.get("sending_method")
 
-    document = document_store.put(
-        service_id, file_content, sending_method=sending_method, mimetype=mimetype
-    )
+    document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
 
     return (
         jsonify(

@@ -43,9 +43,7 @@ class AntivirusClient:
         except requests.RequestException as e:
             error = AntivirusError.from_exception(e)
             current_app.logger.warning(
-                "Notify Antivirus API request failed with error: {}".format(
-                    error.message
-                )
+                "Notify Antivirus API request failed with error: {}".format(error.message)
             )
 
             raise error
