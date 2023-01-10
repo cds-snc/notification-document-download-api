@@ -2,20 +2,20 @@ import io
 
 import pytest
 
-from app.utils.antivirus import AntivirusError
 from tests.conftest import set_config
 
 
 @pytest.fixture
 def store(mocker):
-    return mocker.patch('app.upload.views.document_store')
+    return mocker.patch("app.upload.views.document_store")
 
 
 @pytest.mark.parametrize(
-    "request_includes_filename, filename, in_api_url, expected_filename, sending_method", [
-        (True, 'custom_filename.pdf', True, 'custom_filename.pdf', 'attach'),
-        (False, 'whatever', False, None, 'link'),
-    ]
+    "request_includes_filename, filename, in_api_url, expected_filename, sending_method",
+    [
+        (True, "custom_filename.pdf", True, "custom_filename.pdf", "attach"),
+        (False, "whatever", False, None, "link"),
+    ],
 )
 def test_document_upload_returns_link_to_api(
     client,
@@ -27,37 +27,42 @@ def test_document_upload_returns_link_to_api(
     sending_method,
 ):
     store.put.return_value = {
-        'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-        'encryption_key': bytes(32),
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     data = {
-        'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf'),
-        'sending_method': sending_method
+        "document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf"),
+        "sending_method": sending_method,
     }
 
     api_url_parts = [
-        'http://localhost:7000',
-        '/d/AAAAAAAAAAAAAAAAAAAAAA',
-        '/_____________________w',
-        '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+        "http://localhost:7000",
+        "/d/AAAAAAAAAAAAAAAAAAAAAA",
+        "/_____________________w",
+        "?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     ]
 
     expected_extension = None
     if request_includes_filename:
-        data['filename'] = filename
-        expected_extension = filename.split('.')[-1]
+        data["filename"] = filename
+        expected_extension = filename.split(".")[-1]
 
     if in_api_url:
-        api_url_parts.append(f'&filename={filename}')
+        api_url_parts.append(f"&filename={filename}")
 
     response = client.post(
-        '/services/00000000-0000-0000-0000-000000000000/documents',
-        content_type='multipart/form-data',
-        data=data
+        "/services/00000000-0000-0000-0000-000000000000/documents",
+        content_type="multipart/form-data",
+        data=data,
     )
 
     assert response.status_code == 201
     assert response.json == {
+<<<<<<< HEAD
         'document': {
             'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
             'url': ''.join(api_url_parts),
@@ -73,20 +78,40 @@ def test_document_upload_returns_link_to_api(
             'mime_type': 'application/pdf',
             'file_size': 22,
             'file_extension': expected_extension
+=======
+        "document": {
+            "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            "url": "".join(api_url_parts),
+            "direct_file_url": "".join(
+                [
+                    "http://document-download.test",
+                    "/services/00000000-0000-0000-0000-000000000000",
+                    "/documents/ffffffff-ffff-ffff-ffff-ffffffffffff",
+                    "?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    f"&sending_method={sending_method}",
+                ]
+            ),
+            "filename": expected_filename,
+            "sending_method": sending_method,
+            "mime_type": "application/pdf",
+            "file_size": 22,
+            "file_extension": expected_extension,
+>>>>>>> main
         },
-        'status': 'ok'
+        "status": "ok",
     }
 
 
 @pytest.mark.parametrize(
-    "content, filename, expected_extension, expected_mime, expected_size", [
-        (b'%PDF-1.4 file contents', 'file.pdf', 'pdf', 'application/pdf', 22),
-        (b'Canada', 'text.txt', 'txt', 'text/plain', 6),
-        (b'Canada', 'noextension', None, 'text/plain', 6),
-        (b'foo,bar', 'file.csv', 'csv', 'text/csv', 7),
-        (b'foo,bar', 'FILE.CSV', 'csv', 'text/csv', 7),
-        (b'foo,bar', None, None, 'text/plain', 7),
-    ]
+    "content, filename, expected_extension, expected_mime, expected_size",
+    [
+        (b"%PDF-1.4 file contents", "file.pdf", "pdf", "application/pdf", 22),
+        (b"Canada", "text.txt", "txt", "text/plain", 6),
+        (b"Canada", "noextension", None, "text/plain", 6),
+        (b"foo,bar", "file.csv", "csv", "text/csv", 7),
+        (b"foo,bar", "FILE.CSV", "csv", "text/csv", 7),
+        (b"foo,bar", None, None, "text/plain", 7),
+    ],
 )
 def test_document_upload_returns_size_and_mime(
     client,
@@ -95,122 +120,131 @@ def test_document_upload_returns_size_and_mime(
     filename,
     expected_extension,
     expected_mime,
-    expected_size
+    expected_size,
 ):
     store.put.return_value = {
-        'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-        'encryption_key': bytes(32),
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
     }
 
     response = client.post(
-        '/services/00000000-0000-0000-0000-000000000000/documents',
-        content_type='multipart/form-data',
+        "/services/00000000-0000-0000-0000-000000000000/documents",
+        content_type="multipart/form-data",
         data={
-            'document': (io.BytesIO(content), filename or 'fake'),
-            'sending_method': 'link',
-            'filename': filename,
-        }
+            "document": (io.BytesIO(content), filename or "fake"),
+            "sending_method": "link",
+            "filename": filename,
+        },
     )
 
     assert response.status_code == 201
-    assert response.json['document']['mime_type'] == expected_mime
-    assert response.json['document']['file_size'] == expected_size
-    assert response.json['document']['file_extension'] == expected_extension
+    assert response.json["document"]["mime_type"] == expected_mime
+    assert response.json["document"]["file_size"] == expected_size
+    assert response.json["document"]["file_extension"] == expected_extension
 
 
 @pytest.mark.skip(reason="NO AV")
-def test_document_upload_virus_found(client, store, antivirus):
-    antivirus.scan.return_value = False
+def test_document_upload_virus_found(client, store):
 
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
-        data={
-            'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf')
-        }
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
     )
 
     assert response.status_code == 400
-    assert response.json == {
-        'error': "Document didn't pass the virus scan"
-    }
+    assert response.json == {"error": "Document didn't pass the virus scan"}
 
 
 @pytest.mark.skip(reason="NO AV")
-def test_document_upload_virus_scan_error(client, store, antivirus):
-    antivirus.scan.side_effect = AntivirusError(503, 'connection error')
+def test_document_upload_virus_scan_error(client, store):
 
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
-        data={
-            'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf')
-        }
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
     )
 
     assert response.status_code == 503
-    assert response.json == {
-        'error': "Antivirus API error"
-    }
+    assert response.json == {"error": "Antivirus API error"}
 
 
 def test_document_upload_unknown_type(client):
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
-        data={
-            'document': (io.BytesIO(b'\x00pdf file contents\n'), 'file.pdf')
-        }
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(b"\x00pdf file contents\n"), "file.pdf")},
     )
 
     assert response.status_code == 400
     assert response.json == {
-        'error': "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'application/CDFV2', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']" # noqa
+        "error": "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'application/CDFV2', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']"  # noqa
     }
 
 
-@pytest.mark.parametrize("extra_mime_types,expected_status_code", [
-    ("12345678-1111-1111-1111-123456789012:application/octet-stream", 201),
-    ("12345678-1111-1111-1111-123456789012:application/octet-stream,foo:application/json", 201),
-    ("foo:application/json,12345678-1111-1111-1111-123456789012:application/octet-stream", 201),
-    ("12345678-1111-1111-1111-123456789012:application/json", 400),
-    ("", 400),
-])
+@pytest.mark.parametrize(
+    "extra_mime_types,expected_status_code",
+    [
+        ("12345678-1111-1111-1111-123456789012:application/octet-stream", 201),
+        (
+            "12345678-1111-1111-1111-123456789012:application/octet-stream,foo:application/json",
+            201,
+        ),
+        (
+            "foo:application/json,12345678-1111-1111-1111-123456789012:application/octet-stream",
+            201,
+        ),
+        ("12345678-1111-1111-1111-123456789012:application/json", 400),
+        ("", 400),
+    ],
+)
 def test_document_upload_extra_mime_type(
+<<<<<<< HEAD
     app, client, mocker, store, extra_mime_types,
     expected_status_code
+=======
+    app, client, mocker, store, extra_mime_types, expected_status_code
+>>>>>>> main
 ):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
-    mocker.patch('app.upload.views.get_mime_type', return_value="application/octet-stream")
+    mocker.patch(
+        "app.upload.views.get_mime_type", return_value="application/octet-stream"
+    )
 
     store.put.return_value = {
-        'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-        'encryption_key': bytes(32),
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
     }
 
     with set_config(app, EXTRA_MIME_TYPES=extra_mime_types):
         response = client.post(
-            '/services/12345678-1111-1111-1111-123456789012/documents',
-            content_type='multipart/form-data',
+            "/services/12345678-1111-1111-1111-123456789012/documents",
+            content_type="multipart/form-data",
             data={
-                'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * (10 * 1024 * 1024 - 8)), 'file.pdf')
-            }
+                "document": (
+                    io.BytesIO(b"%PDF-1.5 " + b"a" * (10 * 1024 * 1024 - 8)),
+                    "file.pdf",
+                )
+            },
         )
         assert response.status_code == expected_status_code
 
 
 def test_document_file_size_just_right(client, store):
     store.put.return_value = {
-        'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-        'encryption_key': bytes(32),
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
     }
 
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
         data={
-            'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * (10 * 1024 * 1024 - 8)), 'file.pdf')
-        }
+            "document": (
+                io.BytesIO(b"%PDF-1.5 " + b"a" * (10 * 1024 * 1024 - 8)),
+                "file.pdf",
+            )
+        },
     )
 
     assert response.status_code == 201
@@ -218,26 +252,22 @@ def test_document_file_size_just_right(client, store):
 
 def test_document_file_size_too_large(client):
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
         data={
-            'document': (io.BytesIO(b'%PDF-1.5 ' + b'a' * 11 * 1024 * 1024), 'file.pdf')
-        }
+            "document": (io.BytesIO(b"%PDF-1.5 " + b"a" * 11 * 1024 * 1024), "file.pdf")
+        },
     )
 
     assert response.status_code == 413
-    assert response.json == {
-        'error': "Uploaded document exceeds file size limit"
-    }
+    assert response.json == {"error": "Uploaded document exceeds file size limit"}
 
 
 def test_document_upload_no_document(client):
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
-        data={
-            'file': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf')
-        }
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"file": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
     )
 
     assert response.status_code == 400
@@ -245,14 +275,12 @@ def test_document_upload_no_document(client):
 
 def test_unauthorized_document_upload(client):
     response = client.post(
-        '/services/12345678-1111-1111-1111-123456789012/documents',
-        content_type='multipart/form-data',
-        data={
-            'document': (io.BytesIO(b'%PDF-1.4 file contents'), 'file.pdf')
-        },
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
         headers={
-            'Authorization': None,
-        }
+            "Authorization": None,
+        },
     )
 
     assert response.status_code == 401

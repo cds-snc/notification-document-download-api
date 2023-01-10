@@ -1,10 +1,10 @@
 # Run `make freeze-requirements` to update requirements.txt
 # with package version changes made in requirements-app.txt
 
-Flask==2.0.3
+Flask==2.2.2
 Flask-Env==2.0.0
 
-python-dotenv==0.10.3
+python-dotenv==0.21.0
 python-magic==0.4.27
 
 # PaaS
@@ -14,12 +14,8 @@ gevent==22.10.2
 
 awscli-cwlogs==1.4.6
 
-git+https://github.com/cds-snc/notifier-utils.git@50.0.0#egg=notifications-utils
+git+https://github.com/cds-snc/notifier-utils.git@50.1.0#egg=notifications-utils
 
-socketio-client==0.5.6
 requests
 requests[security]
 pycryptodome
-
-git+https://bitbucket.org/cse-assemblyline/assemblyline_client.git@v3.7.3#egg=assemblyline_client==v3.7.3
-

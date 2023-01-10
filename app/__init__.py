@@ -9,12 +9,12 @@ from app.config import configs
 from app.utils.store import DocumentStore
 from app.utils.antivirus import AntivirusClient
 
-document_store = DocumentStore() # noqa, has to be imported before views
-antivirus_client = AntivirusClient() # noqa
+document_store = DocumentStore()  # noqa, has to be imported before views
+antivirus_client = AntivirusClient()  # noqa
 
-from .download.views import download_blueprint
-from .upload.views import upload_blueprint
-from .healthcheck import healthcheck_blueprint
+from .download.views import download_blueprint  # noqa
+from .upload.views import upload_blueprint  # noqa
+from .healthcheck import healthcheck_blueprint  # noqa
 
 
 class Base64UUIDConverter(BaseConverter):
@@ -32,10 +32,10 @@ class Base64UUIDConverter(BaseConverter):
 
 
 def create_app():
-    application = Flask('app', static_folder=None)
-    application.config.from_object(configs[os.environ['NOTIFY_ENVIRONMENT']])
+    application = Flask("app", static_folder=None)
+    application.config.from_object(configs[os.environ["NOTIFY_ENVIRONMENT"]])
 
-    application.url_map.converters['base64_uuid'] = Base64UUIDConverter
+    application.url_map.converters["base64_uuid"] = Base64UUIDConverter
 
     request_helper.init_app(application)
     logging.init_app(application)
