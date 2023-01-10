@@ -11,20 +11,22 @@ class Config(metaclass=MetaFlaskEnv):
     SECRET_KEY = os.getenv("SECRET_KEY", "secret-key")
     AUTH_TOKENS = os.getenv("AUTH_TOKENS", "auth-token")
 
-    DOCUMENTS_BUCKET = os.getenv("DOCUMENTS_BUCKET", "development-notification-canada-ca-document-download")
+    DOCUMENTS_BUCKET = os.getenv(
+        "DOCUMENTS_BUCKET", "development-notification-canada-ca-document-download"
+    )
 
     ALLOWED_MIME_TYPES = [
-        'application/pdf',
-        'application/CDFV2',
-        'text/csv',
-        'text/plain',
-        'application/msword',  # .doc
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  # .docx
-        'image/jpeg',
-        'image/png',
-        'application/vnd.ms-excel',  # .xls
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  # .xlsx
-        'application/vnd.apple.numbers',  # "Numbers" app on macOS
+        "application/pdf",
+        "application/CDFV2",
+        "text/csv",
+        "text/plain",
+        "application/msword",  # .doc
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
+        "image/jpeg",
+        "image/png",
+        "application/vnd.ms-excel",  # .xls
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
+        "application/vnd.apple.numbers",  # "Numbers" app on macOS
     ]
     EXTRA_MIME_TYPES = os.getenv("EXTRA_MIME_TYPES", "")
 
@@ -39,28 +41,22 @@ class Config(metaclass=MetaFlaskEnv):
     ANTIVIRUS_API_HOST = os.getenv("ANTIVIRUS_API_HOST", "http://localhost:6016")
     ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "")
 
-    MLWR_HOST = os.getenv("MLWR_HOST", False)
-    MLWR_USER = os.getenv("MLWR_USER", "")
-    MLWR_KEY = os.getenv("MLWR_KEY", "")
-
 
 class Test(Config):
     DEBUG = True
 
     # used during tests as a domain name
-    SERVER_NAME = 'document-download.test'
+    SERVER_NAME = "document-download.test"
 
-    SECRET_KEY = 'test-secret'
-    AUTH_TOKENS = 'auth-token:test-token:test-token-2'
+    SECRET_KEY = "test-secret"
+    AUTH_TOKENS = "auth-token:test-token:test-token-2"
 
-    DOCUMENTS_BUCKET = 'test-bucket'
+    DOCUMENTS_BUCKET = "test-bucket"
 
-    ANTIVIRUS_API_HOST = 'https://test-antivirus'
-    ANTIVIRUS_API_KEY = 'test-antivirus-secret'
+    ANTIVIRUS_API_HOST = "https://test-antivirus"
+    ANTIVIRUS_API_KEY = "test-antivirus-secret"
 
-    BACKEND_HOSTNAME = 'localhost:7000'
-
-    MLWR_HOST = "localhost"
+    BACKEND_HOSTNAME = "localhost:7000"
 
 
 class Development(Config):
@@ -76,8 +72,8 @@ class Staging(Production):
 
 
 configs = {
-    'test': Test,
-    'development': Development,
-    'staging': Staging,
-    'production': Production,
+    "test": Test,
+    "development": Development,
+    "staging": Staging,
+    "production": Production,
 }
