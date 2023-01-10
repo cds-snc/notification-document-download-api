@@ -10,6 +10,11 @@ def store(mocker):
     return mocker.patch("app.upload.views.document_store")
 
 
+@pytest.fixture
+def mock_scan_files(mocker):
+    return mocker.patch("app.upload.views.get_scan_verdict", return_value="clean")
+
+
 @pytest.mark.parametrize(
     "request_includes_filename, filename, in_api_url, expected_filename, sending_method",
     [
@@ -178,7 +183,7 @@ def test_document_upload_unknown_type(client):
     ],
 )
 def test_document_upload_extra_mime_type(
-    app, client, mocker, store, extra_mime_types, expected_status_code
+    app, client, mock_scan_files, mocker, store, extra_mime_types, expected_status_code
 ):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
     mocker.patch(
@@ -204,7 +209,7 @@ def test_document_upload_extra_mime_type(
         assert response.status_code == expected_status_code
 
 
-def test_document_file_size_just_right(client, store):
+def test_document_file_size_just_right(client, mock_scan_files, store):
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
@@ -224,7 +229,7 @@ def test_document_file_size_just_right(client, store):
     assert response.status_code == 201
 
 
-def test_document_file_size_too_large(client):
+def test_document_file_size_too_large(client, mock_scan_files):
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
         content_type="multipart/form-data",
