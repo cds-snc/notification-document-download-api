@@ -30,10 +30,7 @@ def test_document_upload_returns_link_to_api(
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> main
     data = {
         "document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf"),
         "sending_method": sending_method,
@@ -62,23 +59,6 @@ def test_document_upload_returns_link_to_api(
 
     assert response.status_code == 201
     assert response.json == {
-<<<<<<< HEAD
-        'document': {
-            'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-            'url': ''.join(api_url_parts),
-            'direct_file_url': ''.join([
-                'http://document-download.test',
-                '/services/00000000-0000-0000-0000-000000000000',
-                '/documents/ffffffff-ffff-ffff-ffff-ffffffffffff',
-                '?key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-                f'&sending_method={sending_method}'
-            ]),
-            'filename': expected_filename,
-            'sending_method': sending_method,
-            'mime_type': 'application/pdf',
-            'file_size': 22,
-            'file_extension': expected_extension
-=======
         "document": {
             "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
             "url": "".join(api_url_parts),
@@ -96,7 +76,6 @@ def test_document_upload_returns_link_to_api(
             "mime_type": "application/pdf",
             "file_size": 22,
             "file_extension": expected_extension,
->>>>>>> main
         },
         "status": "ok",
     }
@@ -199,12 +178,7 @@ def test_document_upload_unknown_type(client):
     ],
 )
 def test_document_upload_extra_mime_type(
-<<<<<<< HEAD
-    app, client, mocker, store, extra_mime_types,
-    expected_status_code
-=======
     app, client, mocker, store, extra_mime_types, expected_status_code
->>>>>>> main
 ):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
     mocker.patch(

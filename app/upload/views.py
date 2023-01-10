@@ -43,7 +43,6 @@ def upload_document(service_id):
     sending_method = request.form.get("sending_method")
 
     document = document_store.put(
-<<<<<<< HEAD
         service_id,
         file_content,
         sending_method=sending_method,
@@ -68,33 +67,6 @@ def upload_document(service_id):
 
     if current_app.config["ANTIVIRUS_API_HOST"]:
         asyncio.run(scan_files_process())
-
-    return jsonify(
-        status='ok',
-        document={
-            'id': document['id'],
-            'direct_file_url': get_direct_file_url(
-                service_id=service_id,
-                document_id=document['id'],
-                key=document['encryption_key'],
-                sending_method=sending_method,
-            ),
-            'url': get_api_download_url(
-                service_id=service_id,
-                document_id=document['id'],
-                key=document['encryption_key'],
-                filename=filename,
-            ),
-            'filename': filename,
-            'sending_method': sending_method,
-            'mime_type': mimetype,
-            'file_size': len(file_content),
-            'file_extension': file_extension,
-        }
-    ), 201
-=======
-        service_id, file_content, sending_method=sending_method, mimetype=mimetype
-    )
 
     return (
         jsonify(
@@ -122,7 +94,6 @@ def upload_document(service_id):
         ),
         201,
     )
->>>>>>> main
 
 
 def mime_type_is_allowed(mimetype, service_id):
