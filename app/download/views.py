@@ -15,9 +15,7 @@ from app.utils.store import DocumentStoreError
 download_blueprint = Blueprint("download", __name__, url_prefix="")
 
 
-@download_blueprint.route(
-    "/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"]
-)
+@download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
 def download_document(service_id, document_id):
     if "key" not in request.args:
         return jsonify(error="Missing decryption key"), 400
@@ -57,9 +55,7 @@ def download_document(service_id, document_id):
     return response
 
 
-@download_blueprint.route(
-    "/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"]
-)
+@download_blueprint.route("/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"])
 def download_document_b64(service_id, document_id):
     if "key" not in request.args:
         abort(404)
