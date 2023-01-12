@@ -77,14 +77,16 @@ def test_put_document_attach_tmp_dir(store):
         Body=mock.ANY,
         Bucket="test-bucket",
         ContentType="application/pdf",
-        Key=Matcher("document key", lambda x: x.startswith("tmp/service-id/") and len(x) == 15 + 36),
+        Key=Matcher(
+            "document key",
+            lambda x: x.startswith("tmp/service-id/") and len(x) == 15 + 36,
+        ),
         SSECustomerKey=ret["encryption_key"],
         SSECustomerAlgorithm="AES256",
     )
 
 
 def test_get_document(store):
-    store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "clean"}]})
     assert store.get("service-id", "document-id", bytes(32), sending_method="link") == {
         "body": mock.ANY,
         "mimetype": "application/pdf",
@@ -101,7 +103,6 @@ def test_get_document(store):
 
 
 def test_get_document_attach_tmp_dir(store):
-    store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "clean"}]})
     assert store.get("service-id", "document-id", bytes(32), sending_method="attach") == {
         "body": mock.ANY,
         "mimetype": "application/pdf",

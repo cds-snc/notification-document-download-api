@@ -11,7 +11,10 @@ from app.utils.antivirus import AntivirusClient, AntivirusError
 def antivirus(client, mocker):
     client = AntivirusClient()
     current_app = mocker.Mock(
-        config={"ANTIVIRUS_API_HOST": "https://antivirus", "ANTIVIRUS_API_KEY": "test-antivirus-key"}
+        config={
+            "ANTIVIRUS_API_HOST": "https://antivirus",
+            "ANTIVIRUS_API_KEY": "test-antivirus-key",
+        }
     )
     client.init_app(current_app)
     return client
