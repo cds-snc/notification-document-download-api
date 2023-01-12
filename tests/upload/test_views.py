@@ -186,9 +186,7 @@ def test_document_upload_extra_mime_type(
     app, client, mock_scan_files, mocker, store, extra_mime_types, expected_status_code
 ):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
-    mocker.patch(
-        "app.upload.views.get_mime_type", return_value="application/octet-stream"
-    )
+    mocker.patch("app.upload.views.get_mime_type", return_value="application/octet-stream")
 
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
@@ -233,9 +231,7 @@ def test_document_file_size_too_large(client, mock_scan_files):
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
         content_type="multipart/form-data",
-        data={
-            "document": (io.BytesIO(b"%PDF-1.5 " + b"a" * 11 * 1024 * 1024), "file.pdf")
-        },
+        data={"document": (io.BytesIO(b"%PDF-1.5 " + b"a" * 11 * 1024 * 1024), "file.pdf")},
     )
 
     assert response.status_code == 413

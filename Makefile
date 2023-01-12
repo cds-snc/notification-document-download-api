@@ -30,3 +30,7 @@ test-requirements:
 	    && { echo "requirements.txt doesn't match requirements-app.txt."; \
 	         echo "Run 'make freeze-requirements' to update."; exit 1; } \
 || { echo "requirements.txt is up to date"; exit 0; }
+
+.PHONY: format
+format:
+	black .

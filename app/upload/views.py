@@ -48,7 +48,7 @@ def upload_document(service_id):
         file_content,
         sending_method=sending_method,
         mimetype=mimetype,
-        scan_verdict=ScanVerdicts.IN_PROGRESS
+        scan_verdict=ScanVerdicts.IN_PROGRESS,
     )
 
     async def scan_files_process():
@@ -62,9 +62,9 @@ def upload_document(service_id):
         time.sleep(30)
         document_store.update_av_status(
             service_id=service_id,
-            document_id=document['id'],
+            document_id=document["id"],
             sending_method=sending_method,
-            scan_verdict=scan_verdict
+            scan_verdict=scan_verdict,
         )
 
     if current_app.config["ANTIVIRUS_API_HOST"]:

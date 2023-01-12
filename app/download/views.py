@@ -14,15 +14,13 @@ from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
     ScanInProgressError,
-    SuspiciousContentError
+    SuspiciousContentError,
 )
 
 download_blueprint = Blueprint("download", __name__, url_prefix="")
 
 
-@download_blueprint.route(
-    "/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"]
-)
+@download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
 def download_document(service_id, document_id):
     if "key" not in request.args:
         return jsonify(error="Missing decryption key"), 400
@@ -48,20 +46,20 @@ def download_document(service_id, document_id):
         return jsonify(error=str(e)), 400
     except (MaliciousContentError, SuspiciousContentError) as e:
         current_app.logger.info(
-            'Malicious content detected, refused to download document: {}'.format(e),
+            "Malicious content detected, refused to download document: {}".format(e),
             extra={
-                'service_id': service_id,
-                'document_id': document_id,
-            }
+                "service_id": service_id,
+                "document_id": document_id,
+            },
         )
         return jsonify(error=str(e)), 400
     except ScanInProgressError as e:
         current_app.logger.info(
-            'Scan in progress, refused to download document: {}'.format(e),
+            "Scan in progress, refused to download document: {}".format(e),
             extra={
-                'service_id': service_id,
-                'document_id': document_id,
-            }
+                "service_id": service_id,
+                "document_id": document_id,
+            },
         )
         return jsonify(error=str(e)), 400
 
@@ -80,9 +78,7 @@ def download_document(service_id, document_id):
     return response
 
 
-@download_blueprint.route(
-    "/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"]
-)
+@download_blueprint.route("/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"])
 def download_document_b64(service_id, document_id):
     if "key" not in request.args:
         abort(404)
@@ -110,9 +106,9 @@ def download_document_b64(service_id, document_id):
         current_app.logger.info(
             e,
             extra={
-                'service_id': service_id,
-                'document_id': document_id,
-            }
+                "service_id": service_id,
+                "document_id": document_id,
+            },
         )
         # Send a "428 Precondition Required" response, let client retry
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/428
@@ -120,11 +116,11 @@ def download_document_b64(service_id, document_id):
 
     except (MaliciousContentError, SuspiciousContentError) as e:
         current_app.logger.info(
-            'Refused to download document: {}'.format(e),
+            "Refused to download document: {}".format(e),
             extra={
-                'service_id': service_id,
-                'document_id': document_id,
-            }
+                "service_id": service_id,
+                "document_id": document_id,
+            },
         )
         # Send a 403 Forbidden response
         abort(403)
