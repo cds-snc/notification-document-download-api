@@ -1,5 +1,6 @@
 import asyncio
 import pathlib
+import time
 
 from flask import Blueprint, current_app, jsonify, request
 
@@ -58,6 +59,7 @@ def upload_document(service_id):
         - update the av-status tag in on the corresponding object in S3
         """
         scan_verdict = get_scan_verdict(file_content, mimetype)
+        time.sleep(30)
         document_store.update_av_status(
             service_id=service_id,
             document_id=document['id'],
