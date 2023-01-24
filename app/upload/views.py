@@ -13,6 +13,23 @@ from app.utils.scan_files import ScanVerdicts, get_scan_verdict
 upload_blueprint = Blueprint("upload", __name__, url_prefix="")
 upload_blueprint.before_request(check_auth)
 
+async def scan_files_process(file_content, mimetype, service_id, document, sending_method):
+    """
+    This function is an async process that will:
+    - send the file to the scan-files API
+    - recieve a verdict
+    - update the av-status tag in on the corresponding object in S3
+    """
+    scan_verdict = get_scan_verdict(file_content, mimetype)
+    # time.sleep(30)
+    document_store.update_av_status(
+        service_id=service_id,
+        document_id=document["id"],
+        sending_method=sending_method,
+        scan_verdict=scan_verdict,
+    )
+
+loop = asyncio.get_event_loop()
 
 @upload_blueprint.route("/services/<uuid:service_id>/documents", methods=["POST"])
 def upload_document(service_id):
@@ -51,24 +68,8 @@ def upload_document(service_id):
         scan_verdict=ScanVerdicts.IN_PROGRESS,
     )
 
-    async def scan_files_process():
-        """
-        This function is an async process that will:
-        - send the file to the scan-files API
-        - recieve a verdict
-        - update the av-status tag in on the corresponding object in S3
-        """
-        scan_verdict = get_scan_verdict(file_content, mimetype)
-        time.sleep(30)
-        document_store.update_av_status(
-            service_id=service_id,
-            document_id=document["id"],
-            sending_method=sending_method,
-            scan_verdict=scan_verdict,
-        )
-
     if current_app.config["ANTIVIRUS_API_HOST"]:
-        asyncio.run(scan_files_process())
+        loop.run_until_complete(scan_files_process(file_content, mimetype, service_id, document, sending_method))
 
     return (
         jsonify(
