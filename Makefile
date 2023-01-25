@@ -4,7 +4,7 @@ GIT_COMMIT ?= $(shell git rev-parse HEAD)
 
 .PHONY: run
 run:
-	FLASK_APP=application.py FLASK_ENV=development flask run -p 7000
+	QUART_APP=application.py QUART_ENV=development quart run -p 7000
 
 .PHONY: test
 test:

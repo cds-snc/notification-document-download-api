@@ -1,4 +1,4 @@
-from flask import current_app, abort, request
+from quart import current_app, abort, request
 
 
 def requires_auth(fn):

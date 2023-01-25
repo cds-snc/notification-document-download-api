@@ -1,4 +1,4 @@
-from flask import jsonify
+from quart import jsonify
 
 from .views import upload_blueprint
 

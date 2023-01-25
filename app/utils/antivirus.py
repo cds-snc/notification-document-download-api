@@ -1,5 +1,5 @@
 import requests
-from flask import current_app
+from quart import current_app
 
 
 class AntivirusError(Exception):

@@ -2,7 +2,7 @@ import io
 from uuid import UUID
 from unittest import mock
 
-from flask import url_for
+from quart import url_for
 import pytest
 
 from app.utils.store import (

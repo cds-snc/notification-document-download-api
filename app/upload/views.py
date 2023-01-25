@@ -2,7 +2,7 @@ import asyncio
 import pathlib
 import time
 
-from flask import Blueprint, current_app, jsonify, request
+from quart import Blueprint, current_app, jsonify, request
 
 from app import document_store
 from app.utils import get_mime_type
@@ -21,7 +21,7 @@ async def scan_files_process(file_content, mimetype, service_id, document, sendi
     - update the av-status tag in on the corresponding object in S3
     """
     scan_verdict = get_scan_verdict(file_content, mimetype)
-    # time.sleep(30)
+    # time.sleep(10)
     document_store.update_av_status(
         service_id=service_id,
         document_id=document["id"],
@@ -32,11 +32,12 @@ async def scan_files_process(file_content, mimetype, service_id, document, sendi
 loop = asyncio.get_event_loop()
 
 @upload_blueprint.route("/services/<uuid:service_id>/documents", methods=["POST"])
-def upload_document(service_id):
-    if "document" not in request.files:
+async def upload_document(service_id):
+    files = await request.files
+    if "document" not in files:
         return jsonify(error="No document upload"), 400
 
-    mimetype = get_mime_type(request.files["document"])
+    mimetype = get_mime_type(files["document"])
     if not mime_type_is_allowed(mimetype, service_id):
         return (
             jsonify(
@@ -46,9 +47,9 @@ def upload_document(service_id):
             ),
             400,
         )
-    file_content = request.files["document"].read()
+    file_content = files["document"].read()
 
-    filename = request.form.get("filename")
+    filename = await request.form.get("filename")
     file_extension = None
     if filename and "." in filename:
         file_extension = "".join(pathlib.Path(filename.lower()).suffixes).lstrip(".")
@@ -58,7 +59,7 @@ def upload_document(service_id):
     if (filename or "").lower().endswith(".csv") and mimetype == "text/plain":
         mimetype = "text/csv"
 
-    sending_method = request.form.get("sending_method")
+    sending_method = await request.form.get("sending_method")
 
     document = document_store.put(
         service_id,

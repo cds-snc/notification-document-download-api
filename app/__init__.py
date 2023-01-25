@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from quart import Quart
 from notifications_utils import logging, request_helper
 from notifications_utils.base64_uuid import base64_to_uuid, uuid_to_base64
 from werkzeug.routing import BaseConverter, ValidationError
@@ -32,12 +32,12 @@ class Base64UUIDConverter(BaseConverter):
 
 
 def create_app():
-    application = Flask("app", static_folder=None)
+    application = Quart("app", static_folder=None)
     application.config.from_object(configs[os.environ["NOTIFY_ENVIRONMENT"]])
 
     application.url_map.converters["base64_uuid"] = Base64UUIDConverter
 
-    request_helper.init_app(application)
+    # request_helper.init_app(application)
     logging.init_app(application)
 
     document_store.init_app(application)
