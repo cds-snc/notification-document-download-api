@@ -30,7 +30,7 @@ jobs:
       run: poetry install
 
     - name: Run tests
-      run: make test
+      run: poetry run make test
     - name: Get python version
       run: |
         python_version=$(python  -V | cut -d' ' -f2)
