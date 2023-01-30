@@ -1,6 +1,8 @@
+from datetime import datetime, time
 import os
+import threading
 
-from flask import Flask
+from flask import Flask, current_app
 from notifications_utils import logging, request_helper
 from notifications_utils.base64_uuid import base64_to_uuid, uuid_to_base64
 from werkzeug.routing import BaseConverter, ValidationError
@@ -46,5 +48,28 @@ def create_app():
     application.register_blueprint(download_blueprint)
     application.register_blueprint(upload_blueprint)
     application.register_blueprint(healthcheck_blueprint)
+
+    @application.before_first_request
+    def before_first_request():
+        """Start a background thread that cleans up old tasks."""
+
+        def clean_old_tasks():
+            """
+            This function cleans up old tasks from our in-memory data structure.
+            """
+            global tasks
+            while True:
+                # Only keep tasks that are running or that finished less than 5
+                # minutes ago.
+                five_min_ago = datetime.timestamp(datetime.utcnow()) - 5 * 60
+                tasks = {
+                    task_id: task
+                    for task_id, task in tasks.items()
+                    if "completion_timestamp" not in task or task["completion_timestamp"] > five_min_ago
+                }
+                time.sleep(60)
+
+        thread = threading.Thread(target=clean_old_tasks)
+        thread.start()
 
     return application

@@ -1,8 +1,11 @@
-import asyncio
+from datetime import datetime
+from functools import wraps
 import pathlib
-import time
+import threading
+import uuid
 
 from flask import Blueprint, current_app, jsonify, request
+from werkzeug.exceptions import HTTPException, InternalServerError
 
 from app import document_store
 from app.utils import get_mime_type
@@ -13,23 +16,67 @@ from app.utils.scan_files import ScanVerdicts, get_scan_verdict
 upload_blueprint = Blueprint("upload", __name__, url_prefix="")
 upload_blueprint.before_request(check_auth)
 
-async def scan_files_process(file_content, mimetype, service_id, document, sending_method):
+tasks = {}
+
+
+def async_api(wrapped_function):
+    @wraps(wrapped_function)
+    def new_function(*args, **kwargs):
+        def task_call(flask_app, environ):
+            # Create a request context similar to that of the original request
+            # so that the task can have access to flask.g, flask.request, etc.
+            with flask_app.request_context(environ):
+                try:
+                    tasks[task_id]["return_value"] = wrapped_function(*args, **kwargs)
+                except HTTPException as e:
+                    tasks[task_id]["return_value"] = current_app.handle_http_exception(e)
+                except Exception as e:
+                    # The function raised an exception, so we set a 500 error
+                    tasks[task_id]["return_value"] = InternalServerError()
+                    if current_app.debug:
+                        # We want to find out if something happened so reraise
+                        raise
+                finally:
+                    # We record the time of the response, to help in garbage
+                    # collecting old tasks
+                    tasks[task_id]["completion_timestamp"] = datetime.timestamp(datetime.utcnow())
+
+                    # close the database session (if any)
+
+        # Assign an id to the asynchronous task
+        task_id = uuid.uuid4().hex
+
+        # Record the task, and then launch it
+        tasks[task_id] = {
+            "task_thread": threading.Thread(
+                target=task_call, args=(current_app._get_current_object(), request.environ)
+            )
+        }
+        tasks[task_id]["task_thread"].start()
+
+        print(f"task_id={task_id}")
+
+    return new_function
+
+
+@async_api
+def scan_files_process(file_content, mimetype, service_id, document, sending_method):
     """
-    This function is an async process that will:
+    This function will run in a new thread and will:
     - send the file to the scan-files API
     - recieve a verdict
     - update the av-status tag in on the corresponding object in S3
     """
     scan_verdict = get_scan_verdict(file_content, mimetype)
-    # time.sleep(30)
+    # Add a `time.sleep(10)` here to test the async behaviour
     document_store.update_av_status(
         service_id=service_id,
         document_id=document["id"],
         sending_method=sending_method,
         scan_verdict=scan_verdict,
     )
+    current_app.logger.info(f"scan verdict={scan_verdict} for document_id={document['id']}")
 
-loop = asyncio.get_event_loop()
 
 @upload_blueprint.route("/services/<uuid:service_id>/documents", methods=["POST"])
 def upload_document(service_id):
@@ -69,7 +116,8 @@ def upload_document(service_id):
     )
 
     if current_app.config["ANTIVIRUS_API_HOST"]:
-        loop.run_until_complete(scan_files_process(file_content, mimetype, service_id, document, sending_method))
+        # will run in a new thread
+        scan_files_process(file_content, mimetype, service_id, document, sending_method)
 
     return (
         jsonify(
