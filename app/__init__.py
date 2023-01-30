@@ -1,4 +1,5 @@
-from datetime import datetime, time
+from datetime import datetime
+import time
 import os
 import threading
 
@@ -17,6 +18,8 @@ antivirus_client = AntivirusClient()  # noqa
 from .download.views import download_blueprint  # noqa
 from .upload.views import upload_blueprint  # noqa
 from .healthcheck import healthcheck_blueprint  # noqa
+
+tasks = {}
 
 
 class Base64UUIDConverter(BaseConverter):

@@ -3,10 +3,10 @@ from functools import wraps
 import pathlib
 import threading
 import uuid
-
 from flask import Blueprint, current_app, jsonify, request
 from werkzeug.exceptions import HTTPException, InternalServerError
 
+import app
 from app import document_store
 from app.utils import get_mime_type
 from app.utils.authentication import check_auth
@@ -15,8 +15,6 @@ from app.utils.scan_files import ScanVerdicts, get_scan_verdict
 
 upload_blueprint = Blueprint("upload", __name__, url_prefix="")
 upload_blueprint.before_request(check_auth)
-
-tasks = {}
 
 
 def async_api(wrapped_function):
@@ -27,19 +25,19 @@ def async_api(wrapped_function):
             # so that the task can have access to flask.g, flask.request, etc.
             with flask_app.request_context(environ):
                 try:
-                    tasks[task_id]["return_value"] = wrapped_function(*args, **kwargs)
+                    app.tasks[task_id]["return_value"] = wrapped_function(*args, **kwargs)
                 except HTTPException as e:
-                    tasks[task_id]["return_value"] = current_app.handle_http_exception(e)
+                    app.tasks[task_id]["return_value"] = current_app.handle_http_exception(e)
                 except Exception as e:
                     # The function raised an exception, so we set a 500 error
-                    tasks[task_id]["return_value"] = InternalServerError()
+                    app.tasks[task_id]["return_value"] = InternalServerError()
                     if current_app.debug:
                         # We want to find out if something happened so reraise
                         raise
                 finally:
                     # We record the time of the response, to help in garbage
                     # collecting old tasks
-                    tasks[task_id]["completion_timestamp"] = datetime.timestamp(datetime.utcnow())
+                    app.tasks[task_id]["completion_timestamp"] = datetime.timestamp(datetime.utcnow())
 
                     # close the database session (if any)
 
@@ -47,14 +45,14 @@ def async_api(wrapped_function):
         task_id = uuid.uuid4().hex
 
         # Record the task, and then launch it
-        tasks[task_id] = {
+        app.tasks[task_id] = {
             "task_thread": threading.Thread(
                 target=task_call, args=(current_app._get_current_object(), request.environ)
             )
         }
-        tasks[task_id]["task_thread"].start()
+        app.tasks[task_id]["task_thread"].start()
 
-        print(f"task_id={task_id}")
+        current_app.logger.info(f"Started task with task_id={task_id}")
 
     return new_function
 
@@ -75,7 +73,7 @@ def scan_files_process(file_content, mimetype, service_id, document, sending_met
         sending_method=sending_method,
         scan_verdict=scan_verdict,
     )
-    current_app.logger.info(f"scan verdict={scan_verdict} for document_id={document['id']}")
+    current_app.logger.info(f"Task complete. Scan verdict={scan_verdict} for document_id={document['id']}")
 
 
 @upload_blueprint.route("/services/<uuid:service_id>/documents", methods=["POST"])
