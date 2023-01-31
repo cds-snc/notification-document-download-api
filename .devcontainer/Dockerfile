@@ -1,8 +1,6 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.10
 
-ENV POETRY_VERSION="1.3.0"
-
-RUN apt-key list
+ENV POETRY_VERSION="1.3.2"
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
