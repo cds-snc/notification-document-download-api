@@ -11,6 +11,14 @@ test:
 	py.test --cov=app --cov-report=term-missing tests/
 	flake8 .
 
+.PHONY: freeze-requirements
+freeze-requirements:
+	poetry lock --no-update
+
+.PHONY: test-requirements
+test-requirements:
+	poetry lock --check
+
 .PHONY: format
 format:
 	black .
