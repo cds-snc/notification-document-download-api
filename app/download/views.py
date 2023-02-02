@@ -9,7 +9,7 @@ from flask import (
 )
 from notifications_utils.base64_uuid import base64_to_bytes
 
-from app import document_store
+from app import document_store, scan_files_document_store
 from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
@@ -34,6 +34,7 @@ def download_document(service_id, document_id):
         return jsonify(error="Invalid decryption key"), 400
 
     try:
+        scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(
@@ -92,6 +93,7 @@ def download_document_b64(service_id, document_id):
         abort(404)
 
     try:
+        sc
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(

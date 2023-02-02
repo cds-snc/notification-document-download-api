@@ -25,6 +25,9 @@ class ScanInProgressError(Exception):
 
 BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
 
+def get_document_key(self, service_id, document_id, sending_method=None):
+    key_prefix = "tmp/" if sending_method == "attach" else ""
+    return f"{key_prefix}{service_id}/{document_id}"
 
 class DocumentStore:
     def __init__(self, bucket=None):
@@ -50,7 +53,7 @@ class DocumentStore:
 
         self.s3.put_object(
             Bucket=self.bucket,
-            Key=self.get_document_key(service_id, document_id, sending_method),
+            Key=get_document_key(service_id, document_id, sending_method),
             Body=document_stream,
             ContentType=mimetype,
             SSECustomerKey=encryption_key,
@@ -66,7 +69,7 @@ class DocumentStore:
         try:
             document = self.s3.get_object(
                 Bucket=self.bucket,
-                Key=self.get_document_key(service_id, document_id, sending_method),
+                Key=get_document_key(service_id, document_id, sending_method),
                 SSECustomerKey=decryption_key,
                 SSECustomerAlgorithm="AES256",
             )
@@ -74,9 +77,50 @@ class DocumentStore:
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
 
+        return {
+            "body": document["Body"],
+            "mimetype": document["ContentType"],
+            "size": document["ContentLength"],
+        }
+
+    def generate_encryption_key(self):
+        return os.urandom(32)
+
+
+class ScanFilesDocumentStore:
+    def __init__(self, bucket=None):
+        self.s3 = boto3.client("s3")
+        self.bucket = bucket
+
+    def init_app(self, app):
+        self.bucket = app.config["SCAN_FILES_DOCUMENTS_BUCKET"]
+
+    def put(
+        self,
+        service_id,
+        document_id,
+        document_stream,
+        sending_method,
+        mimetype="application/pdf"
+    ):
+
+        self.s3.put_object(
+            Bucket=self.bucket,
+            Key=get_document_key(service_id, document_id, sending_method),
+            Body=document_stream,
+            ContentType=mimetype,
+        )
+
+
+    def check_scan_verdict(self, service_id, document_id, sending_method):
+        """
+        scan-files will write the scan verdict to as a tag on the S3 object.
+        Inspect this value and raise an error accordingly.
+        """
+
         try:
             response = self.s3.get_object_tagging(
-                Bucket=self.bucket, Key=self.get_document_key(service_id, document_id, sending_method)
+                Bucket=self.bucket, Key=get_document_key(service_id, document_id, sending_method)
             )
             tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
             av_status = tag_dict["av-status"]
@@ -92,15 +136,3 @@ class DocumentStore:
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
 
-        return {
-            "body": document["Body"],
-            "mimetype": document["ContentType"],
-            "size": document["ContentLength"],
-        }
-
-    def generate_encryption_key(self):
-        return os.urandom(32)
-
-    def get_document_key(self, service_id, document_id, sending_method=None):
-        key_prefix = "tmp/" if sending_method == "attach" else ""
-        return f"{key_prefix}{service_id}/{document_id}"
