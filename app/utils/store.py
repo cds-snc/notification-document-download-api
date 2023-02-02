@@ -4,9 +4,26 @@ import uuid
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
 
+from app.utils.scan_files import ScanVerdicts
+
 
 class DocumentStoreError(Exception):
     pass
+
+
+class SuspiciousContentError(Exception):
+    pass
+
+
+class MaliciousContentError(Exception):
+    pass
+
+
+class ScanInProgressError(Exception):
+    pass
+
+
+BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
 
 
 class DocumentStore:
@@ -17,7 +34,13 @@ class DocumentStore:
     def init_app(self, app):
         self.bucket = app.config["DOCUMENTS_BUCKET"]
 
-    def put(self, service_id, document_stream, sending_method, mimetype="application/pdf"):
+    def put(
+        self,
+        service_id,
+        document_stream,
+        sending_method,
+        mimetype="application/pdf"
+    ):
         """
         returns dict {'id': 'some-uuid', 'encryption_key': b'32 byte encryption key'}
         """
@@ -47,6 +70,24 @@ class DocumentStore:
                 SSECustomerKey=decryption_key,
                 SSECustomerAlgorithm="AES256",
             )
+
+        except BotoClientError as e:
+            raise DocumentStoreError(e.response["Error"])
+
+        try:
+            response = self.s3.get_object_tagging(
+                Bucket=self.bucket, Key=self.get_document_key(service_id, document_id, sending_method)
+            )
+            tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
+            av_status = tag_dict["av-status"]
+            if av_status == ScanVerdicts.IN_PROGRESS.value:
+                raise ScanInProgressError("Content scanning is in progress")
+
+            if av_status == ScanVerdicts.SUSPICIOUS.value:
+                raise SuspiciousContentError("Suspicious content detected")
+
+            if av_status == ScanVerdicts.MALICIOUS.value:
+                raise MaliciousContentError("Malicious content detected")
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])

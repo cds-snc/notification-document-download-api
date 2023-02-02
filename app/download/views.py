@@ -10,7 +10,12 @@ from flask import (
 from notifications_utils.base64_uuid import base64_to_bytes
 
 from app import document_store
-from app.utils.store import DocumentStoreError
+from app.utils.store import (
+    DocumentStoreError,
+    MaliciousContentError,
+    ScanInProgressError,
+    SuspiciousContentError,
+)
 
 download_blueprint = Blueprint("download", __name__, url_prefix="")
 
@@ -33,6 +38,24 @@ def download_document(service_id, document_id):
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error=str(e)), 400
+    except (MaliciousContentError, SuspiciousContentError) as e:
+        current_app.logger.info(
+            "Malicious content detected, refused to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error=str(e)), 400
+    except ScanInProgressError as e:
+        current_app.logger.info(
+            "Scan in progress, refused to download document: {}".format(e),
             extra={
                 "service_id": service_id,
                 "document_id": document_id,
@@ -79,6 +102,28 @@ def download_document_b64(service_id, document_id):
             },
         )
         abort(404)
+    except ScanInProgressError as e:
+        current_app.logger.info(
+            e,
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        # Send a "428 Precondition Required" response, let client retry
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/428
+        abort(428)
+
+    except (MaliciousContentError, SuspiciousContentError) as e:
+        current_app.logger.info(
+            "Refused to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        # Send a 403 Forbidden response
+        abort(403)
 
     response = make_response(
         send_file(

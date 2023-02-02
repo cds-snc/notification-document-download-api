@@ -5,7 +5,12 @@ from unittest import mock
 from flask import url_for
 import pytest
 
-from app.utils.store import DocumentStoreError
+from app.utils.store import (
+    DocumentStoreError,
+    MaliciousContentError,
+    ScanInProgressError,
+    SuspiciousContentError,
+)
 
 
 @pytest.fixture
@@ -134,3 +139,28 @@ def test_document_download_document_store_error(client, store):
 
     assert response.status_code == 400
     assert response.json == {"error": "something went wrong"}
+
+
+@pytest.mark.parametrize(
+    "endpoint, response_code, error",
+    [
+        ["download.download_document", 400, ScanInProgressError()],
+        ["download.download_document_b64", 428, ScanInProgressError()],
+        ["download.download_document", 400, MaliciousContentError()],
+        ["download.download_document_b64", 403, MaliciousContentError()],
+        ["download.download_document", 400, SuspiciousContentError()],
+        ["download.download_document_b64", 403, SuspiciousContentError()],
+    ],
+)
+def test_content_scan_errors(client, store, endpoint, response_code, error):
+    store.get.side_effect = error
+    response = client.get(
+        url_for(
+            endpoint,
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+            key="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        )
+    )
+
+    assert response.status_code == response_code
