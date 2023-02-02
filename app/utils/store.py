@@ -94,7 +94,7 @@ class ScanFilesDocumentStore:
 
     def init_app(self, app):
         self.bucket = app.config["SCAN_FILES_DOCUMENTS_BUCKET"]
-
+        print(f"self.bucket: {self.bucket}")
     def put(
         self,
         service_id,

@@ -42,6 +42,7 @@ def create_app():
     logging.init_app(application)
 
     document_store.init_app(application)
+    scan_files_document_store.init_app(application)
     antivirus_client.init_app(application)
 
     application.register_blueprint(download_blueprint)
