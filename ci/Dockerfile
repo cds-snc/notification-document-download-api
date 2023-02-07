@@ -2,6 +2,7 @@ FROM python:3.10-alpine3.16@sha256:923d30cb18f3d67160cb055a3c3862771edc5d07c63d5
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ARG POETRY_VERSION="1.3.2"
+ENV POETRY_VIRTUALENVS_CREATE false
 
 RUN apk add --no-cache build-base git gcc make libffi-dev openssl-dev libmagic && rm -rf /var/cache/apk/*
 
@@ -14,7 +15,6 @@ WORKDIR /app
 
 COPY . /app
 
-# update pip
 RUN poetry add wheel
 
 RUN set -ex && poetry install
