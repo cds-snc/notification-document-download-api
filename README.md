@@ -12,21 +12,20 @@ docker run make run
 
 ### the local way
 ```bash
-mkvirtualenv -p python3 document-download-api
-brew install libmagic
-pip install -r requirements-dev.txt
+brew install libmagic poetry
+poetry install
 make run
 ```
 
 ## Updating application dependencies
 
-`requirements.txt` file is generated from the `requirements-app.txt` in order to pin
-versions of all nested dependencies. If `requirements-app.txt` has been changed (or
-we want to update the unpinned nested dependencies) `requirements.txt` should be
+`poetry.lock` file is generated from the `pyproject.toml` in order to pin
+versions of all nested dependencies. If `pyproject.toml` has been changed (or
+we want to update the unpinned nested dependencies) `poetry.lock` should be
 regenerated with
 
 ```
-make freeze-requirements
+poetry lock --no-update
 ```
 
-`requirements.txt` should be committed alongside `requirements-app.txt` changes.
+`poetry.lock` should be committed alongside `pyproject.toml` changes.
