@@ -8,7 +8,7 @@ run:
 
 .PHONY: test
 test:
-	py.test --cov=app --cov-report=term-missing tests/
+	poetry run py.test --cov=app --cov-report=term-missing tests/
 	flake8 .
 
 .PHONY: freeze-requirements
