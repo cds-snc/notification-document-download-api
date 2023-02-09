@@ -9,6 +9,7 @@ from tests.conftest import set_config
 def store(mocker):
     return mocker.patch("app.upload.views.document_store")
 
+
 @pytest.fixture
 def scan_files_store(mocker):
     return mocker.patch("app.upload.views.scan_files_document_store")
@@ -271,9 +272,5 @@ def test_upload_document_adds_file_to_scan_files_bucket(
 
     assert response.status_code == 201
     assert scan_files_store.put.assert_called_once_with(
-        service_id,
-        doc_id,
-        content,
-        "link",#sending_method="link",
-        expected_mime#mimetype=expected_mime
+        service_id, doc_id, content, "link", expected_mime  # sending_method="link",  # mimetype=expected_mime
     )
