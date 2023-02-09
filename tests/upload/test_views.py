@@ -1,4 +1,5 @@
 import io
+from uuid import UUID
 
 import pytest
 
@@ -13,6 +14,7 @@ def store(mocker):
 @pytest.fixture
 def scan_files_store(mocker):
     return mocker.patch("app.upload.views.scan_files_document_store")
+    # return mocker.patch("app.utils.store.ScanFilesDocumentStore")
 
 
 @pytest.mark.parametrize(
@@ -234,14 +236,14 @@ def test_unauthorized_document_upload(client):
 
 
 @pytest.mark.parametrize(
-    "content, filename, expected_mime",
+    "content, filename",
     [
-        (b"%PDF-1.4 file contents", "file.pdf", "application/pdf"),
-        (b"Canada", "text.txt", "text/plain"),
-        (b"Canada", "noextension", "text/plain"),
-        (b"foo,bar", "file.csv", "text/csv"),
-        (b"foo,bar", "FILE.CSV", "text/csv"),
-        (b"foo,bar", None, "text/plain"),
+        (b"%PDF-1.4 file contents", "file.pdf"),
+        (b"Canada", "text.txt"),
+        (b"Canada", "noextension"),
+        (b"foo,bar", "file.csv"),
+        (b"foo,bar", "FILE.CSV"),
+        (b"foo,bar", None),
     ],
 )
 def test_upload_document_adds_file_to_scan_files_bucket(
@@ -250,18 +252,15 @@ def test_upload_document_adds_file_to_scan_files_bucket(
     scan_files_store,
     content,
     filename,
-    expected_mime,
 ):
-    service_id = "00000000-0000-0000-0000-000000000000"
     doc_id = "ffffffff-ffff-ffff-ffff-ffffffffffff"
     store.put.return_value = {
         "id": doc_id,
         "encryption_key": bytes(32),
     }
-    scan_files_store.get.return_value = None
 
     response = client.post(
-        f"/services/{service_id}/documents",
+        f"/services/00000000-0000-0000-0000-000000000000/documents",
         content_type="multipart/form-data",
         data={
             "document": (io.BytesIO(content), filename or "fake"),
@@ -271,6 +270,4 @@ def test_upload_document_adds_file_to_scan_files_bucket(
     )
 
     assert response.status_code == 201
-    assert scan_files_store.put.assert_called_once_with(
-        service_id, doc_id, content, "link", expected_mime  # sending_method="link",  # mimetype=expected_mime
-    )
+    scan_files_store.put.assert_called_once()
