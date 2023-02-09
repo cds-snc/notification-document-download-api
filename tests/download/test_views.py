@@ -169,6 +169,7 @@ def test_content_scan_errors(client, scan_files_store, response_code, error):
 
 
 def test_content_scan_no_error(client, scan_files_store):
+    scan_files_store.check_scan_verdict.return_value = "clean"
     response = client.get(
         url_for(
             "download.check_scan_verdict",
