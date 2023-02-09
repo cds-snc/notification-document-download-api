@@ -1,5 +1,4 @@
 import io
-from uuid import UUID
 
 import pytest
 
@@ -14,7 +13,6 @@ def store(mocker):
 @pytest.fixture
 def scan_files_store(mocker):
     return mocker.patch("app.upload.views.scan_files_document_store")
-    # return mocker.patch("app.utils.store.ScanFilesDocumentStore")
 
 
 @pytest.mark.parametrize(
