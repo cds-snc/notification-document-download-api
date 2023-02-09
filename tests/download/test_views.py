@@ -168,7 +168,7 @@ def test_content_scan_errors(client, scan_files_store, response_code, error):
     assert response.status_code == response_code
 
 
-def test_content_scan_no_error(client):
+def test_content_scan_no_error(client, scan_files_store):
     response = client.get(
         url_for(
             "download.check_scan_verdict",

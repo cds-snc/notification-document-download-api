@@ -158,7 +158,9 @@ def test_document_upload_unknown_type(client):
         ("", 400),
     ],
 )
-def test_document_upload_extra_mime_type(app, client, mocker, store, extra_mime_types, expected_status_code):
+def test_document_upload_extra_mime_type(
+    app, client, mocker, store, scan_files_store, extra_mime_types, expected_status_code
+):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
     mocker.patch("app.upload.views.get_mime_type", return_value="application/octet-stream")
 
@@ -181,7 +183,7 @@ def test_document_upload_extra_mime_type(app, client, mocker, store, extra_mime_
         assert response.status_code == expected_status_code
 
 
-def test_document_file_size_just_right(client, store):
+def test_document_file_size_just_right(client, store, scan_files_store):
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
