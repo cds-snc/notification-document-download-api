@@ -101,10 +101,10 @@ def download_document_b64(service_id, document_id):
 
 
 @download_blueprint.route(
-    "/services/<uuid:service_id>/documents/scan-verdict/<uuid:document_id>", methods=["GET"]
+    "/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"]
 )
 def check_scan_verdict(service_id, document_id):
-    sending_method = request.args.get("sending_method", "link")
+    sending_method = request.form.get("sending_method")
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except (MaliciousContentError, SuspiciousContentError) as e:

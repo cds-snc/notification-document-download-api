@@ -157,7 +157,7 @@ def test_document_download_document_store_error(client, store):
 )
 def test_content_scan_errors(client, scan_files_store, response_code, error):
     scan_files_store.check_scan_verdict.side_effect = error
-    response = client.get(
+    response = client.post(
         url_for(
             "download.check_scan_verdict",
             service_id="00000000-0000-0000-0000-000000000000",
@@ -170,7 +170,7 @@ def test_content_scan_errors(client, scan_files_store, response_code, error):
 
 def test_content_scan_no_error(client, scan_files_store):
     scan_files_store.check_scan_verdict.return_value = "clean"
-    response = client.get(
+    response = client.post(
         url_for(
             "download.check_scan_verdict",
             service_id="00000000-0000-0000-0000-000000000000",
