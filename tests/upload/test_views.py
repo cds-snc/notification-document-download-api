@@ -262,7 +262,7 @@ def test_upload_document_adds_file_to_scan_files_bucket(
     }
 
     response = client.post(
-        f"/services/00000000-0000-0000-0000-000000000000/documents",
+        "/services/00000000-0000-0000-0000-000000000000/documents",
         content_type="multipart/form-data",
         data={
             "document": (io.BytesIO(content), filename or "fake"),
