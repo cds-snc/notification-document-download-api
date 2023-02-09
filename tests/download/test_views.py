@@ -144,12 +144,9 @@ def test_document_download_document_store_error(client, store):
 @pytest.mark.parametrize(
     "endpoint, response_code, error",
     [
-        ["download.download_document", 400, ScanInProgressError()],
-        ["download.download_document_b64", 428, ScanInProgressError()],
-        ["download.download_document", 400, MaliciousContentError()],
-        ["download.download_document_b64", 403, MaliciousContentError()],
-        ["download.download_document", 400, SuspiciousContentError()],
-        ["download.download_document_b64", 403, SuspiciousContentError()],
+        ["download.check_scan_verdict", 428, ScanInProgressError()],
+        ["download.check_scan_verdict", 403, MaliciousContentError()],
+        ["download.check_scan_verdict", 403, SuspiciousContentError()],
     ],
 )
 def test_content_scan_errors(client, store, endpoint, response_code, error):

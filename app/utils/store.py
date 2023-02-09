@@ -26,7 +26,7 @@ class ScanInProgressError(Exception):
 BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
 
 
-def get_document_key(self, service_id, document_id, sending_method=None):
+def get_document_key(service_id, document_id, sending_method=None):
     key_prefix = "tmp/" if sending_method == "attach" else ""
     return f"{key_prefix}{service_id}/{document_id}"
 
@@ -35,6 +35,7 @@ class DocumentStore:
     def __init__(self, bucket=None):
         self.s3 = boto3.client("s3")
         self.bucket = bucket
+        self.get_document_key = get_document_key
 
     def init_app(self, app):
         self.bucket = app.config["DOCUMENTS_BUCKET"]
@@ -49,7 +50,7 @@ class DocumentStore:
 
         self.s3.put_object(
             Bucket=self.bucket,
-            Key=get_document_key(service_id, document_id, sending_method),
+            Key=self.get_document_key(service_id, document_id, sending_method),
             Body=document_stream,
             ContentType=mimetype,
             SSECustomerKey=encryption_key,
@@ -65,7 +66,7 @@ class DocumentStore:
         try:
             document = self.s3.get_object(
                 Bucket=self.bucket,
-                Key=get_document_key(service_id, document_id, sending_method),
+                Key=self.get_document_key(service_id, document_id, sending_method),
                 SSECustomerKey=decryption_key,
                 SSECustomerAlgorithm="AES256",
             )
@@ -87,6 +88,7 @@ class ScanFilesDocumentStore:
     def __init__(self, bucket=None):
         self.s3 = boto3.client("s3")
         self.bucket = bucket
+        self.get_document_key = get_document_key
 
     def init_app(self, app):
         self.bucket = app.config["SCAN_FILES_DOCUMENTS_BUCKET"]
@@ -96,7 +98,7 @@ class ScanFilesDocumentStore:
 
         self.s3.put_object(
             Bucket=self.bucket,
-            Key=get_document_key(service_id, document_id, sending_method),
+            Key=self.get_document_key(service_id, document_id, sending_method),
             Body=document_stream,
             ContentType=mimetype,
         )
@@ -109,7 +111,7 @@ class ScanFilesDocumentStore:
 
         try:
             response = self.s3.get_object_tagging(
-                Bucket=self.bucket, Key=get_document_key(service_id, document_id, sending_method)
+                Bucket=self.bucket, Key=self.get_document_key(service_id, document_id, sending_method)
             )
             tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
             av_status = tag_dict["av-status"]
