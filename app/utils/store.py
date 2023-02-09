@@ -132,7 +132,7 @@ class ScanFilesDocumentStore:
 
             if av_status == ScanVerdicts.MALICIOUS.value:
                 raise MaliciousContentError("Malicious content detected")
-
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
+        return av_status
 

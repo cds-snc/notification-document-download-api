@@ -34,7 +34,6 @@ def download_document(service_id, document_id):
         return jsonify(error="Invalid decryption key"), 400
 
     try:
-        scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(
@@ -45,6 +44,33 @@ def download_document(service_id, document_id):
             },
         )
         return jsonify(error=str(e)), 400
+   
+
+    response = make_response(
+        send_file(
+            document["body"],
+            mimetype=document["mimetype"],
+            # as_attachment can only be `True` if the filename is set
+            as_attachment=(filename is not None),
+            download_name=filename,
+        )
+    )
+    response.headers["Content-Length"] = document["size"]
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+
+    return response
+
+
+@download_blueprint.route("/services/<uuid:service_id>/documents/scan-verdict/<uuid:document_id>", methods=["GET"])
+def check_scan_verdict(service_id, document_id):
+
+    if "key" not in request.args:
+        return jsonify(error="Missing decryption key"), 400
+
+    sending_method = request.args.get("sending_method", "link")
+
+    try:
+        av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except (MaliciousContentError, SuspiciousContentError) as e:
         current_app.logger.info(
             "Malicious content detected, refused to download document: {}".format(e),
@@ -63,21 +89,8 @@ def download_document(service_id, document_id):
             },
         )
         return jsonify(error=str(e)), 400
-
-    response = make_response(
-        send_file(
-            document["body"],
-            mimetype=document["mimetype"],
-            # as_attachment can only be `True` if the filename is set
-            as_attachment=(filename is not None),
-            download_name=filename,
-        )
-    )
-    response.headers["Content-Length"] = document["size"]
-    response.headers["X-Robots-Tag"] = "noindex, nofollow"
-
-    return response
-
+    return jsonify(scan_verdict=av_status), 200
+    
 
 @download_blueprint.route("/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"])
 def download_document_b64(service_id, document_id):
@@ -93,7 +106,6 @@ def download_document_b64(service_id, document_id):
         abort(404)
 
     try:
-        sc
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(
