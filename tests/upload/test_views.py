@@ -25,6 +25,7 @@ def scan_files_store(mocker):
 def test_document_upload_returns_link_to_api(
     client,
     store,
+    scan_files_store,
     request_includes_filename,
     filename,
     in_api_url,
@@ -100,6 +101,7 @@ def test_document_upload_returns_link_to_api(
 def test_document_upload_returns_size_and_mime(
     client,
     store,
+    scan_files_store,
     content,
     filename,
     expected_extension,
