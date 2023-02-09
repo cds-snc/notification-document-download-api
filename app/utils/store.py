@@ -25,9 +25,11 @@ class ScanInProgressError(Exception):
 
 BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
 
+
 def get_document_key(self, service_id, document_id, sending_method=None):
     key_prefix = "tmp/" if sending_method == "attach" else ""
     return f"{key_prefix}{service_id}/{document_id}"
+
 
 class DocumentStore:
     def __init__(self, bucket=None):
@@ -37,13 +39,7 @@ class DocumentStore:
     def init_app(self, app):
         self.bucket = app.config["DOCUMENTS_BUCKET"]
 
-    def put(
-        self,
-        service_id,
-        document_stream,
-        sending_method,
-        mimetype="application/pdf"
-    ):
+    def put(self, service_id, document_stream, sending_method, mimetype="application/pdf"):
         """
         returns dict {'id': 'some-uuid', 'encryption_key': b'32 byte encryption key'}
         """
@@ -95,14 +91,8 @@ class ScanFilesDocumentStore:
     def init_app(self, app):
         self.bucket = app.config["SCAN_FILES_DOCUMENTS_BUCKET"]
         print(f"self.bucket: {self.bucket}")
-    def put(
-        self,
-        service_id,
-        document_id,
-        document_stream,
-        sending_method,
-        mimetype="application/pdf"
-    ):
+
+    def put(self, service_id, document_id, document_stream, sending_method, mimetype="application/pdf"):
 
         self.s3.put_object(
             Bucket=self.bucket,
@@ -110,7 +100,6 @@ class ScanFilesDocumentStore:
             Body=document_stream,
             ContentType=mimetype,
         )
-
 
     def check_scan_verdict(self, service_id, document_id, sending_method):
         """
@@ -135,4 +124,3 @@ class ScanFilesDocumentStore:
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
         return av_status
-

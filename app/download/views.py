@@ -44,7 +44,6 @@ def download_document(service_id, document_id):
             },
         )
         return jsonify(error=str(e)), 400
-   
 
     response = make_response(
         send_file(
@@ -61,7 +60,9 @@ def download_document(service_id, document_id):
     return response
 
 
-@download_blueprint.route("/services/<uuid:service_id>/documents/scan-verdict/<uuid:document_id>", methods=["GET"])
+@download_blueprint.route(
+    "/services/<uuid:service_id>/documents/scan-verdict/<uuid:document_id>", methods=["GET"]
+)
 def check_scan_verdict(service_id, document_id):
 
     if "key" not in request.args:
@@ -90,7 +91,7 @@ def check_scan_verdict(service_id, document_id):
         )
         return jsonify(error=str(e)), 400
     return jsonify(scan_verdict=av_status), 200
-    
+
 
 @download_blueprint.route("/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"])
 def download_document_b64(service_id, document_id):

@@ -103,9 +103,7 @@ def test_get_document(store):
 
 
 def test_get_document_attach_tmp_dir(store):
-    store.s3.get_object_tagging = mock.Mock(
-        return_value={"TagSet": [{"Key": "av-status", "Value": "clean"}]}
-    )
+    store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "clean"}]})
     assert store.get("service-id", "document-id", bytes(32), sending_method="attach") == {
         "body": mock.ANY,
         "mimetype": "application/pdf",
