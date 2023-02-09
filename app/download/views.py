@@ -84,6 +84,7 @@ def download_document_b64(service_id, document_id):
             },
         )
         abort(404)
+
     response = make_response(
         send_file(
             document["body"],

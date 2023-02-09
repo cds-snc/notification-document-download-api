@@ -9,6 +9,10 @@ from tests.conftest import set_config
 def store(mocker):
     return mocker.patch("app.upload.views.document_store")
 
+@pytest.fixture
+def scan_files_store(mocker):
+    return mocker.patch("app.upload.views.scan_files_document_store")
+
 
 @pytest.mark.parametrize(
     "request_includes_filename, filename, in_api_url, expected_filename, sending_method",
@@ -122,32 +126,6 @@ def test_document_upload_returns_size_and_mime(
     assert response.json["document"]["file_extension"] == expected_extension
 
 
-@pytest.mark.skip(reason="NO AV")
-def test_document_upload_virus_found(client, store):
-
-    response = client.post(
-        "/services/12345678-1111-1111-1111-123456789012/documents",
-        content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
-    )
-
-    assert response.status_code == 400
-    assert response.json == {"error": "Document didn't pass the virus scan"}
-
-
-@pytest.mark.skip(reason="NO AV")
-def test_document_upload_virus_scan_error(client, store):
-
-    response = client.post(
-        "/services/12345678-1111-1111-1111-123456789012/documents",
-        content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
-    )
-
-    assert response.status_code == 503
-    assert response.json == {"error": "Antivirus API error"}
-
-
 def test_document_upload_unknown_type(client):
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
@@ -252,3 +230,50 @@ def test_unauthorized_document_upload(client):
     )
 
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize(
+    "content, filename, expected_mime",
+    [
+        (b"%PDF-1.4 file contents", "file.pdf", "application/pdf"),
+        (b"Canada", "text.txt", "text/plain"),
+        (b"Canada", "noextension", "text/plain"),
+        (b"foo,bar", "file.csv", "text/csv"),
+        (b"foo,bar", "FILE.CSV", "text/csv"),
+        (b"foo,bar", None, "text/plain"),
+    ],
+)
+def test_upload_document_adds_file_to_scan_files_bucket(
+    client,
+    store,
+    scan_files_store,
+    content,
+    filename,
+    expected_mime,
+):
+    service_id = "00000000-0000-0000-0000-000000000000"
+    doc_id = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+    store.put.return_value = {
+        "id": doc_id,
+        "encryption_key": bytes(32),
+    }
+    scan_files_store.get.return_value = None
+
+    response = client.post(
+        f"/services/{service_id}/documents",
+        content_type="multipart/form-data",
+        data={
+            "document": (io.BytesIO(content), filename or "fake"),
+            "sending_method": "link",
+            "filename": filename,
+        },
+    )
+
+    assert response.status_code == 201
+    assert scan_files_store.put.assert_called_once_with(
+        service_id,
+        doc_id,
+        content,
+        "link",#sending_method="link",
+        expected_mime#mimetype=expected_mime
+    )
