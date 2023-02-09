@@ -17,6 +17,7 @@ from app.utils.store import (
 def store(mocker):
     return mocker.patch("app.download.views.document_store")
 
+
 @pytest.fixture
 def scan_files_store(mocker):
     return mocker.patch("app.download.views.scan_files_document_store")
@@ -165,6 +166,7 @@ def test_content_scan_errors(client, scan_files_store, response_code, error):
     )
 
     assert response.status_code == response_code
+
 
 def test_content_scan_no_error(client):
     response = client.get(
