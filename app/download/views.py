@@ -103,12 +103,7 @@ def download_document_b64(service_id, document_id):
     "/services/<uuid:service_id>/documents/scan-verdict/<uuid:document_id>", methods=["GET"]
 )
 def check_scan_verdict(service_id, document_id):
-
-    if "key" not in request.args:
-        return jsonify(error="Missing decryption key"), 400
-
     sending_method = request.args.get("sending_method", "link")
-
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except (MaliciousContentError, SuspiciousContentError) as e:
@@ -129,4 +124,13 @@ def check_scan_verdict(service_id, document_id):
             },
         )
         return jsonify(error=str(e)), 428
+    except DocumentStoreError as e:
+        current_app.logger.info(
+            "Failed to get tags from document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        abort(404)
     return jsonify(scan_verdict=av_status), 200

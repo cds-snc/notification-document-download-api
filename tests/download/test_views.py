@@ -17,6 +17,10 @@ from app.utils.store import (
 def store(mocker):
     return mocker.patch("app.download.views.document_store")
 
+@pytest.fixture
+def scan_files_store(mocker):
+    return mocker.patch("app.download.views.scan_files_document_store")
+
 
 @pytest.mark.parametrize(
     "endpoint",
@@ -142,22 +146,33 @@ def test_document_download_document_store_error(client, store):
 
 
 @pytest.mark.parametrize(
-    "endpoint, response_code, error",
+    "response_code, error",
     [
-        ["download.check_scan_verdict", 428, ScanInProgressError()],
-        ["download.check_scan_verdict", 403, MaliciousContentError()],
-        ["download.check_scan_verdict", 403, SuspiciousContentError()],
+        [428, ScanInProgressError()],
+        [403, MaliciousContentError()],
+        [403, SuspiciousContentError()],
+        [404, DocumentStoreError()],
     ],
 )
-def test_content_scan_errors(client, store, endpoint, response_code, error):
-    store.get.side_effect = error
+def test_content_scan_errors(client, scan_files_store, response_code, error):
+    scan_files_store.check_scan_verdict.side_effect = error
     response = client.get(
         url_for(
-            endpoint,
+            "download.check_scan_verdict",
             service_id="00000000-0000-0000-0000-000000000000",
             document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-            key="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         )
     )
 
     assert response.status_code == response_code
+
+def test_content_scan_no_error(client):
+    response = client.get(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        )
+    )
+
+    assert response.status_code == 200
