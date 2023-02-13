@@ -150,8 +150,8 @@ def test_document_download_document_store_error(client, store):
     "response_code, error",
     [
         [428, ScanInProgressError()],
-        [403, MaliciousContentError()],
-        [403, SuspiciousContentError()],
+        [423, MaliciousContentError()],
+        [423, SuspiciousContentError()],
         [404, DocumentStoreError()],
     ],
 )

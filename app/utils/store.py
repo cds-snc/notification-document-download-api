@@ -125,4 +125,6 @@ class ScanFilesDocumentStore:
                 raise MaliciousContentError("Malicious content detected")
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
+        except KeyError:
+            raise ScanInProgressError("Content scanning is in progress")
         return av_status

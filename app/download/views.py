@@ -19,6 +19,9 @@ from app.utils.store import (
 
 download_blueprint = Blueprint("download", __name__, url_prefix="")
 
+MALICIOUS_CONTENT_ERROR_CODE = 423
+SCAN_IN_PROGRESS_ERROR_CODE = 428
+
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
 def download_document(service_id, document_id):
@@ -115,7 +118,7 @@ def check_scan_verdict(service_id, document_id):
                 "document_id": document_id,
             },
         )
-        return jsonify(error=str(e)), 403
+        return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
     except ScanInProgressError as e:
         current_app.logger.info(
             "Scan in progress, refused to download document: {}".format(e),
@@ -124,7 +127,7 @@ def check_scan_verdict(service_id, document_id):
                 "document_id": document_id,
             },
         )
-        return jsonify(error=str(e)), 428
+        return jsonify(error=str(e)), SCAN_IN_PROGRESS_ERROR_CODE
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
