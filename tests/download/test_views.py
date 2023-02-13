@@ -5,12 +5,22 @@ from unittest import mock
 from flask import url_for
 import pytest
 
-from app.utils.store import DocumentStoreError
+from app.utils.store import (
+    DocumentStoreError,
+    MaliciousContentError,
+    ScanInProgressError,
+    SuspiciousContentError,
+)
 
 
 @pytest.fixture
 def store(mocker):
     return mocker.patch("app.download.views.document_store")
+
+
+@pytest.fixture
+def scan_files_store(mocker):
+    return mocker.patch("app.download.views.scan_files_document_store")
 
 
 @pytest.mark.parametrize(
@@ -134,3 +144,38 @@ def test_document_download_document_store_error(client, store):
 
     assert response.status_code == 400
     assert response.json == {"error": "something went wrong"}
+
+
+@pytest.mark.parametrize(
+    "response_code, error",
+    [
+        [428, ScanInProgressError()],
+        [423, MaliciousContentError()],
+        [423, SuspiciousContentError()],
+        [404, DocumentStoreError()],
+    ],
+)
+def test_content_scan_errors(client, scan_files_store, response_code, error):
+    scan_files_store.check_scan_verdict.side_effect = error
+    response = client.post(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        )
+    )
+
+    assert response.status_code == response_code
+
+
+def test_content_scan_no_error(client, scan_files_store):
+    scan_files_store.check_scan_verdict.return_value = "clean"
+    response = client.post(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        )
+    )
+
+    assert response.status_code == 200

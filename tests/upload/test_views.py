@@ -10,6 +10,11 @@ def store(mocker):
     return mocker.patch("app.upload.views.document_store")
 
 
+@pytest.fixture
+def scan_files_store(mocker):
+    return mocker.patch("app.upload.views.scan_files_document_store")
+
+
 @pytest.mark.parametrize(
     "request_includes_filename, filename, in_api_url, expected_filename, sending_method",
     [
@@ -20,6 +25,7 @@ def store(mocker):
 def test_document_upload_returns_link_to_api(
     client,
     store,
+    scan_files_store,
     request_includes_filename,
     filename,
     in_api_url,
@@ -95,6 +101,7 @@ def test_document_upload_returns_link_to_api(
 def test_document_upload_returns_size_and_mime(
     client,
     store,
+    scan_files_store,
     content,
     filename,
     expected_extension,
@@ -120,32 +127,6 @@ def test_document_upload_returns_size_and_mime(
     assert response.json["document"]["mime_type"] == expected_mime
     assert response.json["document"]["file_size"] == expected_size
     assert response.json["document"]["file_extension"] == expected_extension
-
-
-@pytest.mark.skip(reason="NO AV")
-def test_document_upload_virus_found(client, store):
-
-    response = client.post(
-        "/services/12345678-1111-1111-1111-123456789012/documents",
-        content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
-    )
-
-    assert response.status_code == 400
-    assert response.json == {"error": "Document didn't pass the virus scan"}
-
-
-@pytest.mark.skip(reason="NO AV")
-def test_document_upload_virus_scan_error(client, store):
-
-    response = client.post(
-        "/services/12345678-1111-1111-1111-123456789012/documents",
-        content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf")},
-    )
-
-    assert response.status_code == 503
-    assert response.json == {"error": "Antivirus API error"}
 
 
 def test_document_upload_unknown_type(client):
@@ -177,7 +158,9 @@ def test_document_upload_unknown_type(client):
         ("", 400),
     ],
 )
-def test_document_upload_extra_mime_type(app, client, mocker, store, extra_mime_types, expected_status_code):
+def test_document_upload_extra_mime_type(
+    app, client, mocker, store, scan_files_store, extra_mime_types, expected_status_code
+):
     # Even if uploading "a PDF", make sure it's detected as "application/octet-stream"
     mocker.patch("app.upload.views.get_mime_type", return_value="application/octet-stream")
 
@@ -200,7 +183,7 @@ def test_document_upload_extra_mime_type(app, client, mocker, store, extra_mime_
         assert response.status_code == expected_status_code
 
 
-def test_document_file_size_just_right(client, store):
+def test_document_file_size_just_right(client, store, scan_files_store):
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
@@ -252,3 +235,41 @@ def test_unauthorized_document_upload(client):
     )
 
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize(
+    "content, filename",
+    [
+        (b"%PDF-1.4 file contents", "file.pdf"),
+        (b"Canada", "text.txt"),
+        (b"Canada", "noextension"),
+        (b"foo,bar", "file.csv"),
+        (b"foo,bar", "FILE.CSV"),
+        (b"foo,bar", None),
+    ],
+)
+def test_upload_document_adds_file_to_scan_files_bucket(
+    client,
+    store,
+    scan_files_store,
+    content,
+    filename,
+):
+    doc_id = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+    store.put.return_value = {
+        "id": doc_id,
+        "encryption_key": bytes(32),
+    }
+
+    response = client.post(
+        "/services/00000000-0000-0000-0000-000000000000/documents",
+        content_type="multipart/form-data",
+        data={
+            "document": (io.BytesIO(content), filename or "fake"),
+            "sending_method": "link",
+            "filename": filename,
+        },
+    )
+
+    assert response.status_code == 201
+    scan_files_store.put.assert_called_once()
