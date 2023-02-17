@@ -21,7 +21,7 @@ download_blueprint = Blueprint("download", __name__, url_prefix="")
 
 MALICIOUS_CONTENT_ERROR_CODE = 423
 SCAN_IN_PROGRESS_ERROR_CODE = 428
-SCAN_TIMEOUT_SECONDS = 5 * 60
+SCAN_TIMEOUT_SECONDS = 10 * 60
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])

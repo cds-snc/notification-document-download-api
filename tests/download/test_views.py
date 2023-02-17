@@ -185,7 +185,7 @@ def test_content_scan_no_error(client, scan_files_store):
 
 def test_scan_times_out(client, scan_files_store):
     scan_files_store.check_scan_verdict.side_effect = ScanInProgressError()
-    scan_files_store.get_object_age_seconds.return_value = 6 * 60
+    scan_files_store.get_object_age_seconds.return_value = 15 * 60
     response = client.post(
         url_for(
             "download.check_scan_verdict",
