@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
@@ -130,8 +130,10 @@ class ScanFilesDocumentStore:
             raise ScanInProgressError("Content scanning is in progress")
         return av_status
 
-    def get_object_age(self, service_id, document_id, sending_method) -> timedelta:
-        """ """
+    def get_object_age(self, service_id, document_id, sending_method) -> int:
+        """ 
+        Returns the object age in seconds.
+        """
 
         try:
             # ETag doesn't matter, but I need to specify ObjectAttributes
@@ -143,7 +145,8 @@ class ScanFilesDocumentStore:
             last_modified = response["ResponseMetadata"]["HTTPHeaders"]["last-modified"]
             last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
             age = datetime.now() - last_modified_parsed
-            return age
+            
+            return age.seconds
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
