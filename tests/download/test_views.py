@@ -1,6 +1,7 @@
 import io
 from uuid import UUID
 from unittest import mock
+import json
 
 from flask import url_for
 import pytest
@@ -180,3 +181,17 @@ def test_content_scan_no_error(client, scan_files_store):
     )
 
     assert response.status_code == 200
+
+
+def test_scan_times_out(client, scan_files_store):
+    scan_files_store.check_scan_verdict.side_effect = ScanInProgressError()
+    scan_files_store.get_object_age_seconds.return_value = 6 * 60
+    response = client.post(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        )
+    )
+    assert response.status_code == 200
+    assert json.loads(response.data) == {"scan_verdict": "scan_timed_out"}
