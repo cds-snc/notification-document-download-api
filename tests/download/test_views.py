@@ -157,6 +157,7 @@ def test_document_download_document_store_error(client, store):
 )
 def test_content_scan_errors(client, scan_files_store, response_code, error):
     scan_files_store.check_scan_verdict.side_effect = error
+    scan_files_store.get_object_age_seconds.return_value = 30
     response = client.post(
         url_for(
             "download.check_scan_verdict",

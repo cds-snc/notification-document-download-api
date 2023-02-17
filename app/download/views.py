@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from flask import (
     Blueprint,
     abort,
@@ -111,7 +109,6 @@ def download_document_b64(service_id, document_id):
 )
 def check_scan_verdict(service_id, document_id):
     sending_method = request.form.get("sending_method")
-    scan_files_document_store.get_object_age(service_id, document_id, sending_method)
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except (MaliciousContentError, SuspiciousContentError) as e:
@@ -124,8 +121,17 @@ def check_scan_verdict(service_id, document_id):
         )
         return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
     except ScanInProgressError as e:
-        age_seconds = scan_files_document_store.get_object_age(service_id, document_id, sending_method)
+        age_seconds = scan_files_document_store.get_object_age_seconds(
+            service_id, document_id, sending_method
+        )
         if age_seconds > SCAN_TIMEOUT_SECONDS:
+            current_app.logger.info(
+                "Scan timed out for document: {}".format(e),
+                extra={
+                    "service_id": service_id,
+                    "document_id": document_id,
+                },
+            )
             return jsonify(scan_verdict="scan_timed_out"), 200
 
         current_app.logger.info(
