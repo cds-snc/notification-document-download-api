@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime, timedelta
 
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
@@ -128,3 +129,21 @@ class ScanFilesDocumentStore:
         except KeyError:
             raise ScanInProgressError("Content scanning is in progress")
         return av_status
+
+    def get_object_age(self, service_id, document_id, sending_method) -> timedelta:
+        """ """
+
+        try:
+            # ETag doesn't matter, but I need to specify ObjectAttributes
+            response = self.s3.get_object_attributes(
+                Bucket=self.bucket,
+                Key=self.get_document_key(service_id, document_id, sending_method),
+                ObjectAttributes=["ETag"],
+            )
+            last_modified = response["ResponseMetadata"]["HTTPHeaders"]["last-modified"]
+            last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+            age = datetime.now() - last_modified_parsed
+            return age
+
+        except BotoClientError as e:
+            raise DocumentStoreError(e.response["Error"])

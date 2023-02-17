@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from flask import (
     Blueprint,
     abort,
@@ -21,6 +23,7 @@ download_blueprint = Blueprint("download", __name__, url_prefix="")
 
 MALICIOUS_CONTENT_ERROR_CODE = 423
 SCAN_IN_PROGRESS_ERROR_CODE = 428
+ALLOWED_SCAN_TIME = timedelta(minutes=5)
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
@@ -108,6 +111,7 @@ def download_document_b64(service_id, document_id):
 )
 def check_scan_verdict(service_id, document_id):
     sending_method = request.form.get("sending_method")
+    scan_files_document_store.get_object_age(service_id, document_id, sending_method)
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except (MaliciousContentError, SuspiciousContentError) as e:
@@ -120,6 +124,10 @@ def check_scan_verdict(service_id, document_id):
         )
         return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
     except ScanInProgressError as e:
+        age = scan_files_document_store.get_object_age(service_id, document_id, sending_method)
+        if age > ALLOWED_SCAN_TIME:
+            return jsonify(scan_verdict="scan_timed_out"), 200
+
         current_app.logger.info(
             "Scan in progress, refused to download document: {}".format(e),
             extra={
