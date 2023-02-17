@@ -23,7 +23,7 @@ download_blueprint = Blueprint("download", __name__, url_prefix="")
 
 MALICIOUS_CONTENT_ERROR_CODE = 423
 SCAN_IN_PROGRESS_ERROR_CODE = 428
-ALLOWED_SCAN_TIME = timedelta(minutes=5)
+SCAN_TIMEOUT = timedelta(minutes=5)
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
@@ -125,7 +125,7 @@ def check_scan_verdict(service_id, document_id):
         return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
     except ScanInProgressError as e:
         age = scan_files_document_store.get_object_age(service_id, document_id, sending_method)
-        if age > ALLOWED_SCAN_TIME:
+        if age > SCAN_TIMEOUT:
             return jsonify(scan_verdict="scan_timed_out"), 200
 
         current_app.logger.info(
