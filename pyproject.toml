@@ -48,6 +48,7 @@ pytest-mock = "3.10.0"
 pytest-cov = "3.0.0"
 
 requests-mock = "1.10.0"
+types-requests = "2.28.11"
 
 coveralls = "1.11.1"
 
