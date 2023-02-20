@@ -38,6 +38,17 @@ def download_document(service_id, document_id):
         return jsonify(error="Invalid decryption key"), 400
 
     try:
+        download_document_b64(service_id, document_id)
+    except Exception as e:
+        raise e
+
+    try:
+        check_scan_verdict(service_id, document_id)
+    except Exception as e:
+        raise e
+
+
+    try:
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(

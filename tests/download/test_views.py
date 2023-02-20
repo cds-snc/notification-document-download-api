@@ -28,7 +28,9 @@ def scan_files_store(mocker):
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download(client, store, endpoint):
+def test_document_download(client, store, endpoint, mocker):
+    mocker.patch("app.download.views.download_document_b64", return_value=None)
+    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -67,7 +69,9 @@ def test_document_download(client, store, endpoint):
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download_with_filename(client, store, endpoint):
+def test_document_download_with_filename(client, store, endpoint, mocker):
+    mocker.patch("app.download.views.download_document_b64", return_value=None)
+    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -132,7 +136,9 @@ def test_document_download_with_invalid_decryption_key(client):
     assert response.json == {"error": "Invalid decryption key"}
 
 
-def test_document_download_document_store_error(client, store):
+def test_document_download_document_store_error(client, store, mocker):
+    mocker.patch("app.download.views.download_document_b64", return_value=None)
+    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
     store.get.side_effect = DocumentStoreError("something went wrong")
     response = client.get(
         url_for(
