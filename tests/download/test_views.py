@@ -193,5 +193,5 @@ def test_scan_times_out(client, scan_files_store):
             document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
         )
     )
-    assert response.status_code == 200
+    assert response.status_code == 408
     assert json.loads(response.data) == {"scan_verdict": "scan_timed_out"}
