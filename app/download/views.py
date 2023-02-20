@@ -38,6 +38,49 @@ def download_document(service_id, document_id):
         return jsonify(error="Invalid decryption key"), 400
 
     try:
+        check_scan_verdict(service_id, document_id, sending_method)
+    except (MaliciousContentError, SuspiciousContentError) as e:
+        current_app.logger.info(
+            "Malicious content detected, refused to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
+    except ScanInProgressError as e:
+        age_seconds = scan_files_document_store.get_object_age_seconds(
+            service_id, document_id, sending_method
+        )
+        if age_seconds > SCAN_TIMEOUT_SECONDS:
+            current_app.logger.info(
+                "Scan timed out for document: {}".format(e),
+                extra={
+                    "service_id": service_id,
+                    "document_id": document_id,
+                },
+            )
+            return jsonify(scan_verdict="scan_timed_out"), 200
+
+        current_app.logger.info(
+            "Scan in progress, refused to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error=str(e)), SCAN_IN_PROGRESS_ERROR_CODE
+    except DocumentStoreError as e:
+        current_app.logger.info(
+            "Failed to get tags from document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        abort(404)
+
+    try:
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(
@@ -78,6 +121,49 @@ def download_document_b64(service_id, document_id):
         abort(404)
 
     try:
+        check_scan_verdict(service_id, document_id, sending_method)
+    except (MaliciousContentError, SuspiciousContentError) as e:
+        current_app.logger.info(
+            "Malicious content detected, refused to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
+    except ScanInProgressError as e:
+        age_seconds = scan_files_document_store.get_object_age_seconds(
+            service_id, document_id, sending_method
+        )
+        if age_seconds > SCAN_TIMEOUT_SECONDS:
+            current_app.logger.info(
+                "Scan timed out for document: {}".format(e),
+                extra={
+                    "service_id": service_id,
+                    "document_id": document_id,
+                },
+            )
+            return jsonify(scan_verdict="scan_timed_out"), 200
+
+        current_app.logger.info(
+            "Scan in progress, refused to download document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error=str(e)), SCAN_IN_PROGRESS_ERROR_CODE
+    except DocumentStoreError as e:
+        current_app.logger.info(
+            "Failed to get tags from document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        abort(404)
+
+    try:
         document = document_store.get(service_id, document_id, key, sending_method)
     except DocumentStoreError as e:
         current_app.logger.info(
@@ -107,8 +193,8 @@ def download_document_b64(service_id, document_id):
 @download_blueprint.route(
     "/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"]
 )
-def check_scan_verdict(service_id, document_id):
-    sending_method = request.form.get("sending_method")
+def check_scan_verdict(service_id, document_id, sending_method=None):
+    sending_method = request.form.get("sending_method", sending_method)
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except (MaliciousContentError, SuspiciousContentError) as e:
