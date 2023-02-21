@@ -156,6 +156,61 @@ def test_document_download_document_store_error(client, store, mocker):
 @pytest.mark.parametrize(
     "response_code, error",
     [
+        [404, ValueError()],
+        [404, DocumentStoreError()],
+    ],
+)
+def test_document_download_b64_content_errors(client, store, mocker, response_code, error):
+    mocker.patch("app.download.views.download_document_b64", side_effect=error)
+    store.get.return_value = {
+        "body": io.BytesIO(b"PDF document contents"),
+        "mimetype": "application/pdf",
+        "size": 100,
+    }
+
+    response = client.get(
+        url_for(
+            "download.download_document",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+            key="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",  # 32 \x00 bytes
+        )
+    )
+    assert response.status_code == response_code
+
+
+@pytest.mark.parametrize(
+    "response_code, error",
+    [
+        [428, ScanInProgressError()],
+        [423, MaliciousContentError()],
+        [423, SuspiciousContentError()],
+        [404, DocumentStoreError()],
+    ],
+)
+def test_document_download_check_scan_verdict_errors(client, store, mocker, response_code, error):
+    mocker.patch("app.download.views.download_document_b64", return_value=None)
+    mocker.patch("app.download.views.check_scan_verdict", side_effect=error)
+    store.get.return_value = {
+        "body": io.BytesIO(b"PDF document contents"),
+        "mimetype": "application/pdf",
+        "size": 100,
+    }
+
+    response = client.get(
+        url_for(
+            "download.download_document",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+            key="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",  # 32 \x00 bytes
+        )
+    )
+    assert response.status_code == response_code
+
+
+@pytest.mark.parametrize(
+    "response_code, error",
+    [
         [428, ScanInProgressError()],
         [423, MaliciousContentError()],
         [423, SuspiciousContentError()],
