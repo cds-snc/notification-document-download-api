@@ -96,7 +96,6 @@ class ScanFilesDocumentStore:
         print(f"self.bucket: {self.bucket}")
 
     def put(self, service_id, document_id, document_stream, sending_method, mimetype="application/pdf"):
-
         self.s3.put_object(
             Bucket=self.bucket,
             Key=self.get_document_key(service_id, document_id, sending_method),
