@@ -21,7 +21,7 @@ python = "~3.10"
 Flask = "2.2.2"
 Flask-Env = "2.0.0"
 
-python-dotenv = "0.21.0"
+python-dotenv = "0.21.1"
 python-magic = "0.4.27"
 
 # PaaS
@@ -43,13 +43,13 @@ flake8 = "3.9.2"
 freezegun = "1.2.2"
 mypy = "1.0.1"
 
-pytest = "7.2.0"
+pytest = "7.2.1"
 pytest-env = "0.8.1"
 pytest-mock = "3.10.0"
 pytest-cov = "3.0.0"
 
 requests-mock = "1.10.0"
-types-requests = "2.28.11"
+types-requests = "2.28.11.13"
 
 coveralls = "1.11.1"
 
