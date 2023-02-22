@@ -28,8 +28,7 @@ def scan_files_store(mocker):
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download(client, store, endpoint, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download(client, store, endpoint):
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -68,8 +67,7 @@ def test_document_download(client, store, endpoint, mocker):
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download_with_filename(client, store, endpoint, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download_with_filename(client, store, endpoint):
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -134,8 +132,7 @@ def test_document_download_with_invalid_decryption_key(client):
     assert response.json == {"error": "Invalid decryption key"}
 
 
-def test_document_download_document_store_error(client, store, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download_document_store_error(client, store):
     store.get.side_effect = DocumentStoreError("something went wrong")
     response = client.get(
         url_for(
@@ -148,37 +145,6 @@ def test_document_download_document_store_error(client, store, mocker):
 
     assert response.status_code == 400
     assert response.json == {"error": "something went wrong"}
-
-
-@pytest.mark.parametrize(
-    "endpoint, response_code, error, scan_return",
-    [
-        ["download.download_document", 200, ScanInProgressError(), 900],
-        ["download.download_document", 428, ScanInProgressError(), 30],
-        ["download.download_document", 423, MaliciousContentError(), 300],
-        ["download.download_document", 423, SuspiciousContentError(), 300],
-        ["download.download_document", 404, DocumentStoreError(), 300],
-        ["download.download_document_b64", 200, ScanInProgressError(), 900],
-        ["download.download_document_b64", 428, ScanInProgressError(), 30],
-        ["download.download_document_b64", 423, MaliciousContentError(), 300],
-        ["download.download_document_b64", 423, SuspiciousContentError(), 300],
-        ["download.download_document_b64", 404, DocumentStoreError(), 300],
-    ],
-)
-def test_document_download_check_scan_verdict_errors(
-    client, scan_files_store, mocker, endpoint, response_code, error, scan_return
-):
-    mocker.patch("app.download.views.check_scan_verdict", side_effect=error)
-    scan_files_store.get_object_age_seconds.return_value = scan_return
-    response = client.get(
-        url_for(
-            endpoint,
-            service_id="00000000-0000-0000-0000-000000000000",
-            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-            key="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",  # 32 \x00 bytes
-        )
-    )
-    assert response.status_code == response_code
 
 
 @pytest.mark.parametrize(
