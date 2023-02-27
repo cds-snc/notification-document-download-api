@@ -154,7 +154,7 @@ def test_document_download_document_store_error(client, store, mocker):
     "endpoint, response_code, error, scan_return",
     [
         ["download.download_document", 200, ScanInProgressError(), 900],
-        ["download.download_document", 428, ScanInProgressError(), 30],
+        ["download.download_document", 200, ScanInProgressError(), 30],
         ["download.download_document", 423, MaliciousContentError(), 300],
         ["download.download_document", 423, SuspiciousContentError(), 300],
         ["download.download_document", 404, DocumentStoreError(), 300],
