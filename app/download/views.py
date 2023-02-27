@@ -130,29 +130,11 @@ def download_document_b64(service_id, document_id):
                 "document_id": document_id,
             },
         )
-        return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
+        abort(404)
     except ScanInProgressError as e:
-        age_seconds = scan_files_document_store.get_object_age_seconds(
-            service_id, document_id, sending_method
-        )
-        if age_seconds > SCAN_TIMEOUT_SECONDS:
-            current_app.logger.info(
-                "Scan timed out for document: {}".format(e),
-                extra={
-                    "service_id": service_id,
-                    "document_id": document_id,
-                },
-            )
-            return jsonify(scan_verdict="scan_timed_out"), 200
-
-        current_app.logger.info(
-            "Scan in progress, refused to download document: {}".format(e),
-            extra={
-                "service_id": service_id,
-                "document_id": document_id,
-            },
-        )
-        return jsonify(error=str(e)), SCAN_IN_PROGRESS_ERROR_CODE
+    # at this point the email with the "link" type attachment has been sent
+    # return the document to the user in case the scan timed out
+    continue
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
