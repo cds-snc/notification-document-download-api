@@ -132,9 +132,10 @@ def download_document_b64(service_id, document_id):
         )
         abort(404)
     except ScanInProgressError as e:
-    # at this point the email with the "link" type attachment has been sent
-    # return the document to the user in case the scan timed out
-    continue
+        # at this point the email with the "link" type attachment has been sent
+        # return the document to the user in case the scan timed out
+        current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
+        pass
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),

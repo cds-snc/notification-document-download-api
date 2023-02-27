@@ -159,17 +159,22 @@ def test_document_download_document_store_error(client, store, mocker):
         ["download.download_document", 423, SuspiciousContentError(), 300],
         ["download.download_document", 404, DocumentStoreError(), 300],
         ["download.download_document_b64", 200, ScanInProgressError(), 900],
-        ["download.download_document_b64", 428, ScanInProgressError(), 30],
-        ["download.download_document_b64", 423, MaliciousContentError(), 300],
-        ["download.download_document_b64", 423, SuspiciousContentError(), 300],
+        ["download.download_document_b64", 200, ScanInProgressError(), 30],
+        ["download.download_document_b64", 404, MaliciousContentError(), 300],
+        ["download.download_document_b64", 404, SuspiciousContentError(), 300],
         ["download.download_document_b64", 404, DocumentStoreError(), 300],
     ],
 )
 def test_document_download_check_scan_verdict_errors(
-    client, scan_files_store, mocker, endpoint, response_code, error, scan_return
+    client, store, scan_files_store, mocker, endpoint, response_code, error, scan_return
 ):
     mocker.patch("app.download.views.check_scan_verdict", side_effect=error)
     scan_files_store.get_object_age_seconds.return_value = scan_return
+    store.get.return_value = store.get.return_value = {
+        "body": io.BytesIO(b"PDF document contents"),
+        "mimetype": "application/pdf",
+        "size": 100,
+    }
     response = client.get(
         url_for(
             endpoint,
