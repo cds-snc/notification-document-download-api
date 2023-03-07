@@ -31,7 +31,7 @@ gevent = "22.10.2"
 
 awscli-cwlogs = "1.4.6"
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "50.1.0"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "50.1.4"}
 
 requests = { extras = ["security"], version = "*" }
 #requests = "*"
