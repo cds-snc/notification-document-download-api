@@ -173,9 +173,7 @@ def check_scan_verdict(service_id, document_id, sending_method=None):
         )
         return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
     except ScanInProgressError as e:
-        age_data = scan_files_document_store.get_object_age_seconds(
-            service_id, document_id, sending_method
-        )
+        age_data = scan_files_document_store.get_object_age_seconds(service_id, document_id, sending_method)
         age_seconds = age_data["age_seconds"]
         current_app.logger.info(f"ScanInProgressError, age_data: {age_data}")
         if age_seconds > SCAN_TIMEOUT_SECONDS:

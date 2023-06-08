@@ -145,7 +145,11 @@ class ScanFilesDocumentStore:
             last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
             age = datetime.now() - last_modified_parsed
 
-            return {"age_seconds": age.seconds, "last_modified": last_modified, "last_modified_parsed": last_modified_parsed}
+            return {
+                "age_seconds": age.seconds,
+                "last_modified": last_modified,
+                "last_modified_parsed": last_modified_parsed,
+            }
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])

@@ -174,6 +174,7 @@ def test_get_object_age_seconds(scan_files_store):
     scan_files_store.s3.get_object_attributes = mock.Mock(
         return_value={"ResponseMetadata": {"HTTPHeaders": {"last-modified": "Fri, 17 Feb 2023 15:05:00 GMT"}}}
     )
-    age_seconds = scan_files_store.get_object_age_seconds("service-id", "document-id", sending_method="link")
+    age_data = scan_files_store.get_object_age_seconds("service-id", "document-id", sending_method="link")
+    age_seconds = age_data["age_seconds"]
     expected_seconds = timedelta(minutes=55).seconds
     assert age_seconds == expected_seconds
