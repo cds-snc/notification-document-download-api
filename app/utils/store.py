@@ -143,12 +143,18 @@ class ScanFilesDocumentStore:
             )
             last_modified = response["ResponseMetadata"]["HTTPHeaders"]["last-modified"]
             last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
-            age = datetime.now() - last_modified_parsed
+            now = datetime.now()
+            utcnow = datetime.utcnow()
+            age = now - last_modified_parsed
+            age_vs_utcnow = utcnow - last_modified_parsed
 
             return {
                 "age_seconds": age.seconds,
                 "last_modified": last_modified,
                 "last_modified_parsed": last_modified_parsed,
+                "now": now,
+                "utcnow": utcnow,
+                "age_vs_utcnow_seconds": age_vs_utcnow.seconds,
             }
 
         except BotoClientError as e:
