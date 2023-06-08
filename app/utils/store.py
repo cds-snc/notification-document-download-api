@@ -129,9 +129,9 @@ class ScanFilesDocumentStore:
             raise ScanInProgressError("Content scanning is in progress")
         return av_status
 
-    def get_object_age_seconds(self, service_id, document_id, sending_method) -> int:
+    def get_object_age_seconds(self, service_id, document_id, sending_method) -> dict:
         """
-        Returns the object age in seconds.
+        Returns the object age in seconds, as well as some data for debugging purposes.
         """
 
         try:
@@ -145,7 +145,7 @@ class ScanFilesDocumentStore:
             last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
             age = datetime.now() - last_modified_parsed
 
-            return age.seconds
+            return {"age_seconds": age.seconds, "last_modified": last_modified, "last_modified_parsed": last_modified_parsed}
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
