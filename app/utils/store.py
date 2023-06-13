@@ -131,7 +131,7 @@ class ScanFilesDocumentStore:
 
     def get_object_age_seconds(self, service_id, document_id, sending_method) -> dict:
         """
-        Returns the object ag"e in seconds, as well as some data for debugging purposes.
+        Returns the object age in seconds, as well as some data for debugging purposes.
         Returns {"age_seconds": 0, ... } if the age would be negative.
         """
 
