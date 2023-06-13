@@ -1,6 +1,5 @@
 import uuid
 from unittest import mock
-from datetime import timedelta
 
 from freezegun import freeze_time
 import pytest
@@ -169,12 +168,19 @@ def test_get_document_flagged_malicious(scan_files_store):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-@freeze_time("2023-02-17 16:00:00.000000")
-def test_get_object_age_seconds(scan_files_store):
+@pytest.mark.parametrize(
+    "last_modified, expected_age_seconds",
+    [
+        ("Fri, 17 Feb 2023 16:00:00 GMT", 60),
+        ("Fri, 17 Feb 2023 16:00:59 GMT", 1),
+        ("Fri, 17 Feb 2023 16:01:01 GMT", 0),
+    ],
+)
+@freeze_time("2023-02-17 16:01:00.000000")
+def test_get_object_age_seconds(scan_files_store, last_modified, expected_age_seconds):
     scan_files_store.s3.get_object_attributes = mock.Mock(
-        return_value={"ResponseMetadata": {"HTTPHeaders": {"last-modified": "Fri, 17 Feb 2023 15:05:00 GMT"}}}
+        return_value={"ResponseMetadata": {"HTTPHeaders": {"last-modified": last_modified}}}
     )
     age_data = scan_files_store.get_object_age_seconds("service-id", "document-id", sending_method="link")
     age_seconds = age_data["age_seconds"]
-    expected_seconds = timedelta(minutes=55).seconds
-    assert age_seconds == expected_seconds
+    assert age_seconds == expected_age_seconds

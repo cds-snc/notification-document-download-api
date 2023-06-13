@@ -131,7 +131,8 @@ class ScanFilesDocumentStore:
 
     def get_object_age_seconds(self, service_id, document_id, sending_method) -> dict:
         """
-        Returns the object age in seconds, as well as some data for debugging purposes.
+        Returns the object ag"e in seconds, as well as some data for debugging purposes.
+        Returns {"age_seconds": 0, ... } if the age would be negative.
         """
 
         try:
@@ -144,17 +145,18 @@ class ScanFilesDocumentStore:
             last_modified = response["ResponseMetadata"]["HTTPHeaders"]["last-modified"]
             last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
             now = datetime.now()
-            utcnow = datetime.utcnow()
-            age = now - last_modified_parsed
-            age_vs_utcnow = utcnow - last_modified_parsed
+            # last_modified is rounded to the nearest second and could be in the future
+            if last_modified_parsed > now:
+                age_seconds = 0
+            else:
+                age = now - last_modified_parsed
+                age_seconds = age.seconds
 
             return {
-                "age_seconds": age.seconds,
+                "age_seconds": age_seconds,
                 "last_modified": last_modified,
                 "last_modified_parsed": last_modified_parsed,
                 "now": now,
-                "utcnow": utcnow,
-                "age_vs_utcnow_seconds": age_vs_utcnow.seconds,
             }
 
         except BotoClientError as e:
