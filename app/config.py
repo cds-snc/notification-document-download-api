@@ -71,8 +71,10 @@ class Production(Config):
 class Staging(Production):
     pass
 
+
 class Scratch(Production):
     pass
+
 
 configs = {
     "test": Test,
