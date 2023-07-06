@@ -18,7 +18,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "~3.10"
-Flask = "2.2.3"
+Flask = "2.3.2"
 Flask-Env = "2.0.0"
 
 python-dotenv = "0.21.0"
@@ -31,7 +31,8 @@ gevent = "22.10.2"
 
 awscli-cwlogs = "1.4.6"
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "51.0.0"}
+# notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "51.0.0"}
+notifications-utils = {git = "https://github.com/cds-snc/notifier-utils.git", branch = "upgrade-flask"}
 
 requests = { extras = ["security"], version = "*" }
 #requests = "*"
