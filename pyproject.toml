@@ -31,8 +31,7 @@ gevent = "22.10.2"
 
 awscli-cwlogs = "1.4.6"
 
-# notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "51.0.0"}
-notifications-utils = {git = "https://github.com/cds-snc/notifier-utils.git", branch = "upgrade-flask"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.0.0"}
 
 requests = { extras = ["security"], version = "*" }
 #requests = "*"
