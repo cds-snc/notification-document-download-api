@@ -76,10 +76,14 @@ class Scratch(Production):
     pass
 
 
+class Dev(Production):
+    pass
+
+
 configs = {
     "test": Test,
     "development": Development,
     "staging": Staging,
     "production": Production,
-    "scratch": Scratch,
+    "dev": Dev,
 }
