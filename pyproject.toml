@@ -28,7 +28,7 @@ PyYAML = "5.3.1"
 # PaaS
 
 gunicorn = "20.1.0"
-gevent = "22.10.2"
+gevent = "23.9.0"
 
 awscli-cwlogs = "1.4.6"
 
