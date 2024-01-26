@@ -9,8 +9,7 @@ environment.sh
 
 # Mac
 *.DS_Store
-.envrc
-.env
+.env*
 
 celerybeat-schedule
 
@@ -19,3 +18,5 @@ celerybeat-schedule
 
 /scripts/run_my_tests.sh
 .vscode
+
+!.env.example
