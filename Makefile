@@ -18,7 +18,7 @@ freeze-requirements:
 
 .PHONY: test-requirements
 test-requirements:
-	poetry lock --check
+	poetry check --lock
 
 .PHONY: format
 format:
