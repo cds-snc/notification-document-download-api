@@ -1058,8 +1058,8 @@ werkzeug = "2.3.7"
 [package.source]
 type = "git"
 url = "https://github.com/cds-snc/notifier-utils.git"
-reference = "upgrade-cryptography"
-resolved_reference = "ac0422352576898b51325f914cf98d18e66f0bb3"
+reference = "52.1.3"
+resolved_reference = "06a40db6286f525fe3551e029418458d33342592"
 
 [[package]]
 name = "ordered-set"
@@ -1747,4 +1747,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "01afefbf7d90ffaa6c5c95726b50503289d1aad1a526660bac8e4817a4e473de"
+content-hash = "cbf4a875ac677158001d079e955c33c43d0f4b2f3dceebde5153499384b1bbc3"
