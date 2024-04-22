@@ -82,6 +82,7 @@ class Dev(Production):
 
 configs = {
     "test": Test,
+    "scratch": Scratch,
     "development": Development,
     "staging": Staging,
     "production": Production,
