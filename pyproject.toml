@@ -51,6 +51,6 @@ pytest-cov = "3.0.0"
 requests-mock = "1.10.0"
 types-requests = "2.28.11"
 
-coveralls = "1.11.1"
+coveralls = "3.3.1"
 
 jinja2-cli = { extras = ["yaml"], version = "0.8.2" }
