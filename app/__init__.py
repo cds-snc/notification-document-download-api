@@ -6,6 +6,7 @@ from notifications_utils.base64_uuid import base64_to_uuid, uuid_to_base64
 from werkzeug.routing import BaseConverter, ValidationError
 
 from app.config import configs
+from app.monkeytype_config import MonkeytypeConfig
 from app.utils.store import DocumentStore, ScanFilesDocumentStore
 from app.utils.antivirus import AntivirusClient
 

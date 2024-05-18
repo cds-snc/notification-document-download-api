@@ -23,3 +23,5 @@ test-requirements:
 .PHONY: format
 format:
 	black .
+	flake8 .
+	mypy .
