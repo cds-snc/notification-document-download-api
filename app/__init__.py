@@ -53,7 +53,7 @@ def create_app():
     # Specify packages to be traced by MonkeyType. This can be overriden
     # via the MONKEYTYPE_TRACE_MODULES environment variable. e.g:
     # MONKEYTYPE_TRACE_MODULES="app.,notifications_utils."
-    if application.config["NOTIFY_ENVIRONMENT"] == "development":
+    if os.environ["NOTIFY_ENVIRONMENT"] == "development":
         packages_prefix = ["app.", "notifications_utils."]
         application.monkeytype_config = MonkeytypeConfig(packages_prefix)
 
