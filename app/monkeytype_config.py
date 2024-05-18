@@ -9,7 +9,7 @@ class MonkeytypeConfig(DefaultConfig):
     def code_filter(self, code):
         # Get the module name from the code object
         # and convert the file path to a module name
-        module_name = code.co_filname.replace(os.path.sep, '.')[:-3]
+        module_name = code.co_filname.replace(os.path.sep, ".")[:-3]
 
         for prefix in self.package_prefixes:
             if module_name.startswith(prefix):
