@@ -20,3 +20,6 @@ celerybeat-schedule
 .vscode
 
 !.env.example
+
+# Ruff cache
+.ruff_cache/

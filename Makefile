@@ -22,4 +22,6 @@ test-requirements:
 
 .PHONY: format
 format:
-	black .
+	ruff check --select I --fix .
+	ruff format .
+	poetry run mypy .
