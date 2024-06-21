@@ -6,8 +6,8 @@ from notifications_utils.base64_uuid import base64_to_uuid, uuid_to_base64
 from werkzeug.routing import BaseConverter, ValidationError
 
 from app.config import configs
-from app.utils.store import DocumentStore, ScanFilesDocumentStore
 from app.utils.antivirus import AntivirusClient
+from app.utils.store import DocumentStore, ScanFilesDocumentStore
 
 document_store = DocumentStore()  # noqa, has to be imported before views
 scan_files_document_store = ScanFilesDocumentStore()  # noqa, has to be imported before views

@@ -1,9 +1,8 @@
 from contextlib import contextmanager
 
 import pytest
-from flask.testing import FlaskClient
-
 from app import create_app
+from flask.testing import FlaskClient
 
 
 @pytest.fixture(scope="session")

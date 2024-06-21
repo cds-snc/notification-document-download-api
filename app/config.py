@@ -1,6 +1,7 @@
 import os
-from flask_env import MetaFlaskEnv
+
 from dotenv import load_dotenv
+from flask_env import MetaFlaskEnv
 
 load_dotenv()
 

@@ -1,13 +1,14 @@
 from unittest import mock
-from tests.conftest import set_config
 
 from app.utils.authentication import (
-    token_is_valid,
+    check_auth,
     get_allowed_tokens,
     get_token_from_headers,
-    check_auth,
     requires_auth,
+    token_is_valid,
 )
+
+from tests.conftest import set_config
 
 
 def test_unknown_token_is_not_valid(app):

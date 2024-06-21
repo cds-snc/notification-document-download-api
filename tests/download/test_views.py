@@ -1,17 +1,16 @@
 import io
-from uuid import UUID
-from unittest import mock
 import json
+from unittest import mock
+from uuid import UUID
 
-from flask import url_for
 import pytest
-
 from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
     ScanInProgressError,
     SuspiciousContentError,
 )
+from flask import url_for
 
 
 @pytest.fixture
