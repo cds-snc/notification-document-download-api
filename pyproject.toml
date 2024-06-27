@@ -38,7 +38,7 @@ requests = { extras = ["security"], version = "*" }
 pycryptodome = "*"
 
 [tool.poetry.group.test.dependencies]
-black = "23.3.0"
+black = "24.3.0"
 flake8 = "6.0.0"
 freezegun = "1.2.2"
 mypy = "1.0.1"
