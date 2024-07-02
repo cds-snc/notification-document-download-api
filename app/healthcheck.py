@@ -1,6 +1,5 @@
 from flask import Blueprint
 
-
 healthcheck_blueprint = Blueprint("healthcheck", __name__, url_prefix="")
 
 
