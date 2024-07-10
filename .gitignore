@@ -16,6 +16,9 @@ celerybeat-schedule
 # CloudFoundry
 .cf
 
+# MonkeyType
+monkeytype.sqlite3
+
 /scripts/run_my_tests.sh
 .vscode
 
