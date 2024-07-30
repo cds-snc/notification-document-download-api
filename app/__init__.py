@@ -16,6 +16,7 @@ antivirus_client = AntivirusClient()  # noqa
 from .download.views import download_blueprint  # noqa
 from .upload.views import upload_blueprint  # noqa
 from .healthcheck import healthcheck_blueprint  # noqa
+from .xray_test import  xray_blueprint  # noqa
 
 
 class Base64UUIDConverter(BaseConverter):
@@ -48,5 +49,6 @@ def create_app():
     application.register_blueprint(download_blueprint)
     application.register_blueprint(upload_blueprint)
     application.register_blueprint(healthcheck_blueprint)
+    application.register_blueprint(xray_blueprint)
 
     return application
