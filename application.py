@@ -25,4 +25,3 @@ xray_recorder.begin_segment('AppStart')
 application.logger.info('Logger: Application started')
 xray_recorder.put_annotation('message', 'Xray: Application started')
 xray_recorder.end_segment()
-# Log a message when the app starts
