@@ -36,6 +36,9 @@ python-magic = "0.4.27"
 PyYAML = "6.0.1"
 
 requests = { extras = ["security"], version = "*" }
+pycryptodome = "*"
+aws-xray-sdk = "^2.14.0"
+types-aws-xray-sdk = "^2.14.0.20240606"
 
 [tool.poetry.group.test.dependencies]
 
