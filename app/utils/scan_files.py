@@ -1,7 +1,7 @@
-from enum import Enum
-import requests
 import json
+from enum import Enum
 
+import requests
 from flask import current_app
 
 

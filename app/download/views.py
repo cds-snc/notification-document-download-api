@@ -156,9 +156,7 @@ def download_document_b64(service_id, document_id):
     return response
 
 
-@download_blueprint.route(
-    "/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"]
-)
+@download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"])
 def check_scan_verdict(service_id, document_id, sending_method=None):
     sending_method = request.form.get("sending_method", sending_method)
     try:

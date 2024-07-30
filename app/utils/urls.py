@@ -1,4 +1,4 @@
-from urllib.parse import quote, urlunsplit, urlencode
+from urllib.parse import quote, urlencode, urlunsplit
 
 from flask import current_app, url_for
 from notifications_utils.base64_uuid import bytes_to_base64, uuid_to_base64

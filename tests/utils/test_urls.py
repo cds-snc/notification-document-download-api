@@ -2,7 +2,6 @@ from uuid import UUID
 
 from app.utils.urls import get_api_download_url, get_direct_file_url
 
-
 SAMPLE_KEY = bytes(range(32))
 # the b64 has one trailing =, that we strip.
 SAMPLE_B64 = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
@@ -11,9 +10,7 @@ SAMPLE_B64 = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
 def test_get_api_download_url_returns_url_without_filename(app):
     assert get_api_download_url(
         service_id=UUID(int=0), document_id=UUID(int=1), key=SAMPLE_KEY, filename=None
-    ) == "http://localhost:7000/d/{}/{}?key={}".format(
-        "AAAAAAAAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAAAAAAAQ", SAMPLE_B64
-    )
+    ) == "http://localhost:7000/d/{}/{}?key={}".format("AAAAAAAAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAAAAAAAQ", SAMPLE_B64)
 
 
 def test_get_api_download_url_returns_url_with_filename(app):
