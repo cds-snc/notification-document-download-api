@@ -36,6 +36,8 @@ notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", t
 
 requests = { extras = ["security"], version = "*" }
 pycryptodome = "*"
+aws-xray-sdk = "^2.14.0"
+types-aws-xray-sdk = "^2.14.0.20240606"
 
 [tool.poetry.group.test.dependencies]
 black = "23.3.0"
