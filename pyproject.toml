@@ -20,6 +20,7 @@ build-backend = "poetry.core.masonry.api"
 python = "~3.10.9"
 
 awscli-cwlogs = "1.4.6"
+aws-xray-sdk = "^2.14.0"
 Flask = "2.3.3"
 Flask-Env = "2.0.0"
 gevent = "23.9.0"
@@ -36,8 +37,6 @@ python-magic = "0.4.27"
 PyYAML = "6.0.1"
 
 requests = { extras = ["security"], version = "*" }
-pycryptodome = "*"
-aws-xray-sdk = "^2.14.0"
 types-aws-xray-sdk = "^2.14.0.20240606"
 
 [tool.poetry.group.test.dependencies]
