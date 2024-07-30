@@ -4,7 +4,7 @@ from aws_xray_sdk.core import xray_recorder
 xray_blueprint = Blueprint("xray", __name__, url_prefix="")
 
 
-@xray_blueprint.route("/_xray")
+@xray_blueprint.route("/_debug")
 def status():
     # Retrieve the current X-Ray segment
     segment = xray_recorder.current_segment()
