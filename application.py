@@ -9,9 +9,6 @@ from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
 
 load_dotenv()
 
-# Set the XRAY_DAEMON_ADDRESS
-os.environ['AWS_XRAY_DAEMON_ADDRESS'] = 'xray-daemon-aws-xray.xray.svc.cluster.local:2000'
-
 # Configure the xray_recorder
 xray_recorder.configure(service='notification-document-download-api')
 
