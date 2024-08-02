@@ -32,7 +32,7 @@ gevent = "24.2.1"
 
 awscli-cwlogs = "1.4.6"
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.1.5"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.2.7"}
 
 requests = { extras = ["security"], version = "*" }
 pycryptodome = "*"
