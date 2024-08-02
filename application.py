@@ -1,6 +1,5 @@
 ##!/usr/bin/env python
 
-import os
 from app import create_app
 from dotenv import load_dotenv
 from aws_xray_sdk.core import xray_recorder
