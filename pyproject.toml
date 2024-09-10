@@ -21,9 +21,9 @@ python = "~3.10.9"
 Flask = "2.3.3"
 Flask-Env = "2.0.0"
 
-python-dotenv = "1.0.0"
+python-dotenv = "1.0.1"
 python-magic = "0.4.27"
-PyYAML = "6.0.1"
+PyYAML = "6.0.2"
 
 # PaaS
 
@@ -32,7 +32,7 @@ gevent = "24.2.1"
 
 awscli-cwlogs = "1.4.6"
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.2.7"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.2.9"}
 
 requests = { extras = ["security"], version = "*" }
 pycryptodome = "*"
@@ -46,7 +46,7 @@ freezegun = "1.2.2"
 mypy = "1.0.1"
 
 pytest = "7.2.0"
-pytest-env = "0.8.1"
+pytest-env = "0.8.2"
 pytest-mock = "3.10.0"
 pytest-cov = "3.0.0"
 
