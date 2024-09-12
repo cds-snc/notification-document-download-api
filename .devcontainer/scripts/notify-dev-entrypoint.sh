@@ -15,6 +15,7 @@ echo -e "alias ls='exa'" >> ~/.zshrc
 echo -e "alias l='exa -alh'" >> ~/.zshrc
 echo -e "alias ll='exa -alh@ --git'" >> ~/.zshrc
 echo -e "alias lt='exa -al -T -L 2'" >> ~/.zshrc
+echo -e "alias poe='poetry run poe'" >> ~/.zshrc
 
 
 # Poetry autocomplete
@@ -28,5 +29,9 @@ pip install poetry==${POETRY_VERSION}  poetry-plugin-sort \
 mkdir ~/.zfunc
 touch ~/.zfunc/_poetry
 poetry completions zsh > ~/.zfunc/_poetry
+
+# Poe the Poet plugin tab completions
+touch ~/.zfunc/_poe
+poetry run poe _zsh_completion > ~/.zfunc/_poe
 
 poetry install

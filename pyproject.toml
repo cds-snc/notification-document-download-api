@@ -18,9 +18,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "~3.10.9"
+aws-xray-sdk = "^2.14.0"
 
 awscli-cwlogs = "1.4.6"
-aws-xray-sdk = "^2.14.0"
 Flask = "2.3.3"
 Flask-Env = "2.0.0"
 gevent = "24.2.1"
@@ -42,7 +42,9 @@ types-aws-xray-sdk = "^2.14.0.20240606"
 coveralls = "1.11.1"
 freezegun = "1.5.1"
 jinja2-cli = { extras = ["yaml"], version = "0.8.2" }
+monkeytype = "23.3.0"
 mypy = "1.0.1"
+poethepoet = "^0.24.4"
 
 pytest = "7.2.0"
 pytest-cov = "3.0.0"
@@ -53,6 +55,52 @@ requests-mock = "1.10.0"
 ruff = "^0.2.1"
 types-requests = "2.28.11"
 
+
+# Poe the Poet tasks
+[tool.poe.tasks.trace-app]
+help = "Runs the app with monkeytype type collection enabled."
+shell = """
+        monkeytype run -m flask run -p 7000 --host=0.0.0.0
+"""
+
+[tool.poe.tasks.trace-tests]
+help = "Runs a test suite or single test through MonkeyType, generating a record of type annotation traces monkeytype.sqlite3"
+shell = """
+    if [ -z "${method}" ]; then
+        monkeytype run -m pytest '/tests/app/${test-path}::${method}'
+    else
+        monkeytype run -m pytest '/tests/app/${test-path}'
+    fi
+"""
+    # Define arguments for trace-tests
+    [tool.poe.tasks.trace-tests.args.test-path]
+    help = "Path to the test file to run. /tests/app/ can be omitted. e.g. poe trace-tests -p main/test_contact.py"
+    options = ["-p", "--path"]
+    type = "string"
+    required = true
+
+    [tool.poe.tasks.trace-tests.args.method]
+    help = "Name of the test method to execute and trace"
+    options = ["-m", "--method"]
+    type = "string"
+    default = ""
+    required = false
+
+[tool.poe.tasks.list-modules]
+help = "Lists all files and modules that have trace data associated with them in monkeytype.sqlite3"
+cmd = "monkeytype list-modules"
+
+# Composite task that uses list-modules to obtain a list of files and modules
+[tool.poe.tasks.apply-annotations]
+help = "Applies ALL known type annotations stored in monkeytype.sqlite3"
+shell = """
+    for trace in ${TRACES}
+    do
+        monkeytype apply $trace
+    done
+"""
+deps = ["list-modules"]
+uses = { TRACES = "list-modules"}
 
 [tool.ruff]
 target-version = "py310"

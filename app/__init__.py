@@ -6,6 +6,7 @@ from notifications_utils.base64_uuid import base64_to_uuid, uuid_to_base64
 from werkzeug.routing import BaseConverter, ValidationError
 
 from app.config import configs
+from app.monkeytype_config import MonkeytypeConfig
 from app.utils.antivirus import AntivirusClient
 from app.utils.store import DocumentStore, ScanFilesDocumentStore
 
@@ -50,5 +51,12 @@ def create_app():
     application.register_blueprint(upload_blueprint)
     application.register_blueprint(healthcheck_blueprint)
     application.register_blueprint(xray_blueprint)
+
+    # Specify packages to be traced by MonkeyType. This can be overriden
+    # via the MONKEYTYPE_TRACE_MODULES environment variable. e.g:
+    # MONKEYTYPE_TRACE_MODULES="app.,notifications_utils."
+    if os.environ["NOTIFY_ENVIRONMENT"] == "development":
+        packages_prefix = ["app.", "notifications_utils."]
+        application.monkeytype_config = MonkeytypeConfig(packages_prefix)
 
     return application
