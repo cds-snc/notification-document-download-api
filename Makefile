@@ -8,8 +8,8 @@ run:
 
 .PHONY: test
 test:
+	poetry run ruff check --select I .
 	poetry run mypy .
-	poetry run flake8 .
 	poetry run py.test --cov=app --cov-report=term-missing tests/
 
 .PHONY: freeze-requirements
@@ -22,4 +22,6 @@ test-requirements:
 
 .PHONY: format
 format:
-	black .
+	ruff check --select I --fix .
+	ruff check
+	ruff format .
