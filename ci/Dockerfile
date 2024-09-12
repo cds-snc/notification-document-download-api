@@ -1,10 +1,10 @@
-FROM python:3.10-alpine3.16@sha256:afe68972cc00883d70b3760ee0ffbb7375cf09706c122dda7063ffe64c5be21b
+FROM python:3.10-alpine3.18@sha256:d5ee9613c89c9bd4c4112465d2136512ea8629bce6ff15fa27144f3cc16b5c6b
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ARG POETRY_VERSION="1.7.1"
 ENV POETRY_VIRTUALENVS_CREATE false
 
-RUN apk add --no-cache build-base git gcc make libffi-dev openssl-dev libmagic && rm -rf /var/cache/apk/*
+RUN apk add --no-cache build-base git gcc make libffi-dev openssl-dev libmagic rust cargo && rm -rf /var/cache/apk/*
 
 RUN pip3 install poetry==${POETRY_VERSION} \
   && poetry --version
