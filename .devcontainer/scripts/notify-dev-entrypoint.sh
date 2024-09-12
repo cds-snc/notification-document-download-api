@@ -22,7 +22,7 @@ echo -e "alias poe='poetry run poe'" >> ~/.zshrc
 echo -e "fpath+=/.zfunc" >> ~/.zshrc
 echo -e "autoload -Uz compinit && compinit"
 
-pip install poetry==${POETRY_VERSION} \
+pip install poetry==${POETRY_VERSION}  poetry-plugin-sort \
   && poetry --version
 
   # Initialize poetry autocompletions
