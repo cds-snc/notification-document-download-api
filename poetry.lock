@@ -719,10 +719,6 @@ files = [
     {file = "greenlet-3.1.0-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:90b5bbf05fe3d3ef697103850c2ce3374558f6fe40fd57c9fac1bf14903f50a5"},
     {file = "greenlet-3.1.0-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:726377bd60081172685c0ff46afbc600d064f01053190e4450857483c4d44484"},
     {file = "greenlet-3.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:d46d5069e2eeda111d6f71970e341f4bd9aeeee92074e649ae263b834286ecc0"},
-    {file = "greenlet-3.1.0-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f82891460ec9c91e712d8e82880d35a838f660d99050690f6e064cbff19b347a"},
-    {file = "greenlet-3.1.0-cp313-cp313t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:3d355093c822c49acda06467ce1261e490662073771dfa88851a6b6715ce893a"},
-    {file = "greenlet-3.1.0-cp313-cp313t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:ad5cb5d62b504d371264f08aa879f4cbed095ea25e224b4cdae032d652ee13fa"},
-    {file = "greenlet-3.1.0-cp313-cp313t-musllinux_1_1_aarch64.whl", hash = "sha256:d985b2de702baf876aa1ad861b0fd848f09755e238a59155168078e8da5ed184"},
     {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:81eeec4403a7d7684b5812a8aaa626fa23b7d0848edb3a28d2eb3220daddcbd0"},
     {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4a3dae7492d16e85ea6045fd11cb8e782b63eac8c8d520c3a92c02ac4573b0a6"},
     {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4b5ea3664eed571779403858d7cd0a9b0ebf50d57d2cdeafc7748e09ef8cd81a"},
@@ -1802,4 +1798,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.9"
-content-hash = "caf82240c8d707436557caf4a487d0cc93f43c00158de53ac500c54920cf0b03"
+content-hash = "25fe1ca9bc5499f2f6eaca6be4ef31daa3cc6abe96cfed52f1a1308b603af717"

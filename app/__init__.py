@@ -9,14 +9,14 @@ from app.config import configs
 from app.utils.antivirus import AntivirusClient
 from app.utils.store import DocumentStore, ScanFilesDocumentStore
 
-document_store = DocumentStore()  # noqa, has to be imported before views
-scan_files_document_store = ScanFilesDocumentStore()  # noqa, has to be imported before views
-antivirus_client = AntivirusClient()  # noqa
+document_store = DocumentStore()  # noqa: I001
+scan_files_document_store = ScanFilesDocumentStore()  # noqa: I001
+antivirus_client = AntivirusClient()  # noqa: I001
 
-from .download.views import download_blueprint  # noqa
-from .upload.views import upload_blueprint  # noqa
-from .healthcheck import healthcheck_blueprint  # noqa
-from .xray_test import  xray_blueprint  # noqa
+from .download.views import download_blueprint  # noqa: I001
+from .upload.views import upload_blueprint  # noqa: I001
+from .healthcheck import healthcheck_blueprint  # noqa: I001
+from .xray_test import xray_blueprint  # noqa: I001
 
 
 class Base64UUIDConverter(BaseConverter):

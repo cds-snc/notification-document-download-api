@@ -23,4 +23,5 @@ test-requirements:
 .PHONY: format
 format:
 	ruff check --select I --fix .
+	ruff check
 	ruff format .
