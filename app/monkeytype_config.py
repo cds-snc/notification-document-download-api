@@ -1,4 +1,5 @@
 import os
+
 from monkeytype.config import DefaultConfig
 
 
