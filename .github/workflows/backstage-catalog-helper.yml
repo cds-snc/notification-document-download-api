@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@de5a000abf73b6f4965bd1bcdf8f8d94a56ea815
         with:
           fetch-depth: 0
       - name: Run Backstage Catalog Info Helper
-        uses: cds-snc/backstage-catalog-info-helper-action@v0.3.1
+        uses: cds-snc/backstage-catalog-info-helper-action@e36696cef34ed39c43a6e4a3873821bb2bad7eef # v0.3.1
         with:
           github_app_id: ${{ secrets.SRE_BOT_RW_APP_ID }}
           github_app_private_key: ${{ secrets.SRE_BOT_RW_PRIVATE_KEY }}
@@ -25,7 +25,7 @@ jobs:
           app_id: ${{ secrets.SRE_BOT_RW_APP_ID }}
           private_key: ${{ secrets.SRE_BOT_RW_PRIVATE_KEY }}
       - name: Create pull request
-        uses: peter-evans/create-pull-request@6cd32fd93684475c31847837f87bb135d40a2b79 # v7.0.3
+        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # v7.0.5
         with:
           token: ${{ steps.generate_token.outputs.token}}
           sign-commits: true
