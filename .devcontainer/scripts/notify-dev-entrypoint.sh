@@ -30,8 +30,9 @@ mkdir ~/.zfunc
 touch ~/.zfunc/_poetry
 poetry completions zsh > ~/.zfunc/_poetry
 
+poetry install
+
 # Poe the Poet plugin tab completions
 touch ~/.zfunc/_poe
 poetry run poe _zsh_completion > ~/.zfunc/_poe
 
-poetry install
