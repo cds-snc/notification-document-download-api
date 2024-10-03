@@ -17,7 +17,7 @@ requires = ["poetry-core>=1.7.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "~3.10.9"
+python = "~3.12.6"
 aws-xray-sdk = "^2.14.0"
 
 awscli-cwlogs = "1.4.6"
@@ -28,7 +28,7 @@ gevent = "24.2.1"
 gunicorn = "22.0.0"
 
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.2.7"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.3.3" }
 pycryptodome = "*"
 
 python-dotenv = "1.0.1"
@@ -72,19 +72,19 @@ shell = """
         monkeytype run -m pytest '/tests/app/${test-path}'
     fi
 """
-    # Define arguments for trace-tests
-    [tool.poe.tasks.trace-tests.args.test-path]
-    help = "Path to the test file to run. /tests/app/ can be omitted. e.g. poe trace-tests -p main/test_contact.py"
-    options = ["-p", "--path"]
-    type = "string"
-    required = true
+# Define arguments for trace-tests
+[tool.poe.tasks.trace-tests.args.test-path]
+help = "Path to the test file to run. /tests/app/ can be omitted. e.g. poe trace-tests -p main/test_contact.py"
+options = ["-p", "--path"]
+type = "string"
+required = true
 
-    [tool.poe.tasks.trace-tests.args.method]
-    help = "Name of the test method to execute and trace"
-    options = ["-m", "--method"]
-    type = "string"
-    default = ""
-    required = false
+[tool.poe.tasks.trace-tests.args.method]
+help = "Name of the test method to execute and trace"
+options = ["-m", "--method"]
+type = "string"
+default = ""
+required = false
 
 [tool.poe.tasks.list-modules]
 help = "Lists all files and modules that have trace data associated with them in monkeytype.sqlite3"
@@ -100,7 +100,7 @@ shell = """
     done
 """
 deps = ["list-modules"]
-uses = { TRACES = "list-modules"}
+uses = { TRACES = "list-modules" }
 
 [tool.ruff]
 target-version = "py310"
