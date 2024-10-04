@@ -28,7 +28,7 @@ gevent = "24.2.1"
 gunicorn = "22.0.0"
 
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.3.3" }
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", branch = "task/pythonupgrade" }
 pycryptodome = "*"
 
 python-dotenv = "1.0.1"
