@@ -17,7 +17,7 @@ requires = ["poetry-core>=1.7.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "~3.12.7"
+python = "~3.12.6"
 aws-xray-sdk = "^2.14.0"
 
 awscli-cwlogs = "1.4.6"
