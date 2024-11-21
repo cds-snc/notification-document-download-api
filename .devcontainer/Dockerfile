@@ -9,6 +9,7 @@ RUN apt-get update \
         emacs \
         exa \
         fd-find \
+        fzf \
         git \
         iproute2 \
         less \
