@@ -9,8 +9,10 @@ RUN apt-get update \
         emacs \
         exa \
         fd-find \
+        fzf \
         git \
         iproute2 \
+        iputils-ping \
         less \
         libmagic-dev \
         libsodium-dev \
@@ -22,6 +24,7 @@ RUN apt-get update \
         npm \
         openssh-client \
         procps \
+        ripgrep \
         sudo \
         tldr \
         unzip \
@@ -34,5 +37,7 @@ RUN apt-get update \
 RUN pip install --upgrade pip
 
 COPY .devcontainer/scripts/notify-dev-entrypoint.sh /usr/local/bin/
+
+ENV SHELL /bin/zsh
 
 EXPOSE 7000

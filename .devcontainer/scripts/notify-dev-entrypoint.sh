@@ -17,6 +17,9 @@ echo -e "alias ll='exa -alh@ --git'" >> ~/.zshrc
 echo -e "alias lt='exa -al -T -L 2'" >> ~/.zshrc
 echo -e "alias poe='poetry run poe'" >> ~/.zshrc
 
+echo -e "# fzf key bindings and completion" >> ~/.zshrc
+echo -e "source /usr/share/doc/fzf/examples/key-bindings.zsh" >> ~/.zshrc
+echo -e "source /usr/share/doc/fzf/examples/completion.zsh" >> ~/.zshrc
 
 # Poetry autocomplete
 echo -e "fpath+=/.zfunc" >> ~/.zshrc
