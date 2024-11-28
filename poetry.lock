@@ -1087,10 +1087,10 @@ files = [
 
 [[package]]
 name = "notifications-utils"
-version = "52.4.0"
+version = "53.0.0"
 description = "Shared python code for Notification - Provides logging utils etc."
 optional = false
-python-versions = "~3.12.6"
+python-versions = "~3.12.7"
 files = []
 develop = false
 
@@ -1124,7 +1124,7 @@ werkzeug = "3.0.4"
 type = "git"
 url = "https://github.com/cds-snc/notifier-utils.git"
 reference = "task/pythonupgrade"
-resolved_reference = "6a66632b9ddaade4bf7c54a6fb8935daf0c27099"
+resolved_reference = "f62f02fd58e2a38c68be3515ebc59b59b3143a69"
 
 [[package]]
 name = "ordered-set"
