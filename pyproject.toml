@@ -26,7 +26,7 @@ Flask-Env = "2.0.0"
 gevent = "24.2.1"
 # PaaS
 gunicorn = "22.0.0"
-
+newrelic = "10.3.0"
 
 notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", branch = "task/pythonupgrade"}
 pycryptodome = "*"
