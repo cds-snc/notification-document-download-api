@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 110
-target-version = ['py37', 'py38', 'py39', 'py310']
+target-version = ['py37', 'py38', 'py39', 'py310', 'py312']
 include = '(app|tests)/.*\.pyi?$'
 
 [tool.poetry]
@@ -17,7 +17,7 @@ requires = ["poetry-core>=1.7.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "~3.10.9"
+python = "~3.12.7"
 aws-xray-sdk = "^2.14.0"
 
 awscli-cwlogs = "1.4.6"
@@ -28,7 +28,7 @@ gevent = "24.2.1"
 gunicorn = "22.0.0"
 newrelic = "10.3.0"
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "52.2.7"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "53.0.1"}
 pycryptodome = "*"
 
 python-dotenv = "1.0.1"

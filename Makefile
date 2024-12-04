@@ -6,6 +6,10 @@ GIT_COMMIT ?= $(shell git rev-parse HEAD)
 run:
 	FLASK_APP=application.py FLASK_ENV=development poetry run flask run -p 7000
 
+.PHONY: run-gunicorn
+run-gunicorn:
+	PORT=7000 poetry run gunicorn -c gunicorn_config.py application
+
 .PHONY: test
 test:
 	poetry run ruff check --select I .
