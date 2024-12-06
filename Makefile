@@ -12,7 +12,9 @@ run-gunicorn:
 
 .PHONY: test
 test:
+	poetry run ruff check .
 	poetry run ruff check --select I .
+	poetry run ruff format --check .
 	poetry run mypy .
 	poetry run py.test --cov=app --cov-report=term-missing tests/
 
