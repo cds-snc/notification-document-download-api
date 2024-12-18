@@ -26,14 +26,14 @@ Flask-Env = "2.0.0"
 gevent = "24.2.1"
 # PaaS
 gunicorn = "22.0.0"
-newrelic = "10.3.0"
+newrelic = "10.3.1"
 
-notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "53.0.1"}
+notifications-utils = { git = "https://github.com/cds-snc/notifier-utils.git", tag = "53.0.2"}
 pycryptodome = "*"
 
 python-dotenv = "1.0.1"
 python-magic = "0.4.27"
-PyYAML = "6.0.1"
+PyYAML = "6.0.2"
 
 requests = { extras = ["security"], version = "*" }
 types-aws-xray-sdk = "^2.14.0.20240606"
@@ -48,7 +48,7 @@ poethepoet = "^0.24.4"
 
 pytest = "7.2.0"
 pytest-cov = "3.0.0"
-pytest-env = "0.8.1"
+pytest-env = "0.8.2"
 pytest-mock = "3.14.0"
 
 requests-mock = "1.10.0"
