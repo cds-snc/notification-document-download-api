@@ -9,6 +9,7 @@ from app.config import configs
 from app.monkeytype_config import MonkeytypeConfig
 from app.utils.antivirus import AntivirusClient
 from app.utils.store import DocumentStore, ScanFilesDocumentStore
+from app.utils.logging import log_config
 
 document_store = DocumentStore()  # noqa: I001
 scan_files_document_store = ScanFilesDocumentStore()  # noqa: I001
@@ -42,6 +43,8 @@ def create_app():
 
     request_helper.init_app(application)
     logging.init_app(application)
+
+    log_config(application)
 
     document_store.init_app(application)
     scan_files_document_store.init_app(application)
