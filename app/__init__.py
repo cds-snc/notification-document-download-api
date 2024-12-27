@@ -37,11 +37,14 @@ class Base64UUIDConverter(BaseConverter):
 def create_app():
     application = Flask("app", static_folder=None)
     application.config.from_object(configs[os.environ["NOTIFY_ENVIRONMENT"]])
+    config = configs[os.environ["NOTIFY_ENVIRONMENT"]]
 
     application.url_map.converters["base64_uuid"] = Base64UUIDConverter
 
     request_helper.init_app(application)
     logging.init_app(application)
+
+    application.logger.info(f"Notify config: {config.get_safe_config()}")
 
     document_store.init_app(application)
     scan_files_document_store.init_app(application)

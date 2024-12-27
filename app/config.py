@@ -1,13 +1,17 @@
 import os
+from typing import Any
 
 from dotenv import load_dotenv
+from environs import Env
 from flask_env import MetaFlaskEnv
 
+env = Env()
+env.read_env()
 load_dotenv()
 
 
 class Config(metaclass=MetaFlaskEnv):
-    DEBUG = os.getenv("DEBUG", False)
+    DEBUG = env.bool("DEBUG", False)
 
     SECRET_KEY = os.getenv("SECRET_KEY", "secret-key")
     AUTH_TOKENS = os.getenv("AUTH_TOKENS", "auth-token")
@@ -42,6 +46,30 @@ class Config(metaclass=MetaFlaskEnv):
 
     ANTIVIRUS_API_HOST = os.getenv("ANTIVIRUS_API_HOST", "http://localhost:6016")
     ANTIVIRUS_API_KEY = os.getenv("ANTIVIRUS_API_KEY", "")
+
+    @classmethod
+    def get_sensitive_config(cls) -> list[str]:
+        "List of config keys that contain sensitive information"
+        return [
+            "SECRET_KEY",
+            "AUTH_TOKENS",
+            "ANTIVIRUS_API_KEY",
+        ]
+
+    @classmethod
+    def get_config(cls, sensitive_config: list[str]) -> dict[str, Any]:
+        "Returns a dict of config keys and values"
+        config = {}
+        for attr in dir(cls):
+            attr_value = "***" if attr in sensitive_config else getattr(cls, attr)
+            if not attr.startswith("__") and not callable(attr_value):
+                config[attr] = attr_value
+        return config
+
+    @classmethod
+    def get_safe_config(cls) -> dict[str, Any]:
+        "Returns a dict of config keys and values with sensitive values masked"
+        return cls.get_config(cls.get_sensitive_config())
 
 
 class Test(Config):
