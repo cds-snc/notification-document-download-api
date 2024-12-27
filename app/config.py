@@ -2,13 +2,16 @@ import os
 from typing import Any
 
 from dotenv import load_dotenv
+from environs import Env
 from flask_env import MetaFlaskEnv
 
+env = Env()
+env.read_env()
 load_dotenv()
 
 
 class Config(metaclass=MetaFlaskEnv):
-    DEBUG = os.getenv("DEBUG", False)
+    DEBUG = env.bool("DEBUG", False)
 
     SECRET_KEY = os.getenv("SECRET_KEY", "secret-key")
     AUTH_TOKENS = os.getenv("AUTH_TOKENS", "auth-token")

@@ -21,6 +21,7 @@ python = "~3.12.7"
 aws-xray-sdk = "^2.14.0"
 
 awscli-cwlogs = "1.4.6"
+environs = "^11.2.1"
 Flask = "2.3.3"
 Flask-Env = "2.0.0"
 gevent = "24.2.1"
