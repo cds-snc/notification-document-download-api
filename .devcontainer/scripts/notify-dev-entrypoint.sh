@@ -33,6 +33,9 @@ mkdir ~/.zfunc
 touch ~/.zfunc/_poetry
 poetry completions zsh > ~/.zfunc/_poetry
 
+# Set up git blame to ignore certain revisions e.g. sweeping code formatting changes.
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+
 poetry install
 
 # Poe the Poet plugin tab completions
