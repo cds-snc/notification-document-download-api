@@ -1,0 +1,48 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Gunicorn",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "gunicorn",
+            "gevent": true,
+            "args": [
+                "--config",
+                "gunicorn_config.py",
+                "application"
+            ],
+            "env": {
+                "FLASK_APP": "application.py",
+                "FLASK_ENV": "development"
+            },
+            "justMyCode": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Flask",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "application.py",
+                "FLASK_ENV": "development"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "-p 7000",
+                "--host=0.0.0.0"
+            ],
+            "jinja": true,
+            "justMyCode": false
+        }
+    ]
+}
