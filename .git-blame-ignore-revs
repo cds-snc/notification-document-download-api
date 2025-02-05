@@ -1,0 +1,9 @@
+##################################################################
+## This file lists commits that should be ignored by git blame. ##
+## e.g. Formatting commits, non-functional changes, etc.        ##
+##################################################################
+
+# Black formatter https://github.com/cds-snc/notification-document-download-api/commit/d69bb99eb72fd6a7f92dc952ddf41dec495147f8
+d69bb99eb72fd6a7f92dc952ddf41dec495147f8
+# Ruff formatter https://github.com/cds-snc/notification-document-download-api/commit/6026d95143fb58fbd849b1d39bca7b8b76123430
+6026d95143fb58fbd849b1d39bca7b8b76123430
