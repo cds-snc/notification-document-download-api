@@ -19,7 +19,8 @@
 				"[python]": {
 					"editor.defaultFormatter": "charliermarsh.ruff"
 				},
-				"python.pythonPath": "/usr/local/bin/python"
+				"python.defaultInterpreterPath": "/home/vscode/.venv/workspace/bin/python",
+				"python.venvPath": "/home/vscode/.venv"
 			},
 			"extensions": [
 				"charliermarsh.ruff",
