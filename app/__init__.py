@@ -17,7 +17,6 @@ antivirus_client = AntivirusClient()  # noqa: I001
 from .download.views import download_blueprint  # noqa: I001
 from .upload.views import upload_blueprint  # noqa: I001
 from .healthcheck import healthcheck_blueprint  # noqa: I001
-from .xray_test import xray_blueprint  # noqa: I001
 
 
 class Base64UUIDConverter(BaseConverter):
@@ -53,7 +52,6 @@ def create_app():
     application.register_blueprint(download_blueprint)
     application.register_blueprint(upload_blueprint)
     application.register_blueprint(healthcheck_blueprint)
-    application.register_blueprint(xray_blueprint)
 
     # Specify packages to be traced by MonkeyType. This can be overriden
     # via the MONKEYTYPE_TRACE_MODULES environment variable. e.g:

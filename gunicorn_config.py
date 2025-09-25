@@ -8,8 +8,37 @@ import newrelic.agent  # See https://bit.ly/2xBVKBH
 environment = os.environ.get("NOTIFY_ENVIRONMENT")
 newrelic.agent.initialize(environment=environment)  # noqa: E402
 
+# Detect OpenTelemetry auto-instrumentation
+# When OTEL is present, use sync workers to avoid conflicts with gevent monkey patching
+def is_otel_enabled():
+    """Check if OpenTelemetry auto-instrumentation is enabled."""
+    # Check for common OTEL environment variables
+    otel_vars = [
+        "OTEL_SERVICE_NAME",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_RESOURCE_ATTRIBUTES",
+        "OTEL_PYTHON_DISABLED_INSTRUMENTATIONS",
+        "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST",
+        "OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE"
+    ]
+    
+    # If any OTEL environment variable is set, assume OTEL is enabled
+    for var in otel_vars:
+        if os.environ.get(var):
+            return True
+    
+    # Check if opentelemetry packages are available
+    try:
+        import opentelemetry
+        return True
+    except ImportError:
+        pass
+    
+    return False
+
 workers = 4
-worker_class = "gevent"
+# Use sync workers when OpenTelemetry is detected to avoid gevent conflicts
+worker_class = "sync" if is_otel_enabled() else "gevent"
 worker_connections = 256
 bind = "0.0.0.0:{}".format(os.getenv("PORT"))
 accesslog = "-"
@@ -56,6 +85,11 @@ start_time = time.time()
 
 def on_starting(server):
     server.log.info("Starting Document Download API")
+    server.log.info(f"Using worker class: {worker_class}")
+    if worker_class == "sync":
+        server.log.info("OpenTelemetry detected - using sync workers to avoid gevent conflicts")
+    else:
+        server.log.info("OpenTelemetry not detected - using gevent workers for better performance")
 
 
 def worker_abort(worker):
