@@ -18,7 +18,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "~3.12.7"
-aws-xray-sdk = "^2.14.0"
 
 awscli-cwlogs = "1.4.6"
 environs = "^11.2.1"
@@ -37,7 +36,6 @@ python-magic = "0.4.27"
 PyYAML = "6.0.1"
 
 requests = { extras = ["security"], version = "*" }
-types-aws-xray-sdk = "^2.14.0.20240606"
 
 [tool.poetry.group.test.dependencies]
 coveralls = "1.11.1"
