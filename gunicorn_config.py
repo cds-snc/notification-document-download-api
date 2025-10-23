@@ -3,11 +3,11 @@ import sys
 import time
 import traceback
 
-import newrelic.agent  # See https://bit.ly/2xBVKBH
-
 enable_newrelic = os.getenv("ENABLE_NEW_RELIC", "False").lower() == "true"
 
 if enable_newrelic:
+    import newrelic.agent  # See https://bit.ly/2xBVKBH
+    
     environment = os.environ.get("NOTIFY_ENVIRONMENT")
     newrelic.agent.initialize(environment=environment)  # noqa: E402
 
