@@ -6,9 +6,10 @@ from app.utils.store import (
     DocumentStore,
     DocumentStoreError,
     MaliciousContentError,
+    ScanFailedError,
     ScanFilesDocumentStore,
     ScanInProgressError,
-    SuspiciousContentError,
+    ScanUnsupportedError,
 )
 from botocore.exceptions import ClientError as BotoClientError
 from freezegun import freeze_time
@@ -114,7 +115,9 @@ def test_get_document(store):
 
 
 def test_get_document_attach_tmp_dir(store):
-    store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "clean"}]})
+    store.s3.get_object_tagging = mock.Mock(
+        return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "NO_THREATS_FOUND"}]}
+    )
     assert store.get("service-id", "document-id", bytes(32), sending_method="attach") == {
         "body": mock.ANY,
         "mimetype": "application/pdf",
@@ -140,20 +143,40 @@ def test_get_document_with_boto_error(store):
 
 
 def test_get_document_with_scan_in_progress(scan_files_store):
-    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "in_progress"}]})
+    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": []})
     with pytest.raises(ScanInProgressError):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-def test_get_document_flagged_suspicious(scan_files_store):
-    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "suspicious"}]})
-    with pytest.raises(SuspiciousContentError):
+def test_get_document_flagged_malicious(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "THREATS_FOUND"}]}
+    )
+    with pytest.raises(MaliciousContentError):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-def test_get_document_flagged_malicious(scan_files_store):
-    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "malicious"}]})
-    with pytest.raises(MaliciousContentError):
+def test_get_document_scan_unsupported(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "UNSUPPORTED"}]}
+    )
+    with pytest.raises(ScanUnsupportedError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_get_document_scan_failed_access_denied(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "ACCESS_DENIED"}]}
+    )
+    with pytest.raises(ScanFailedError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_get_document_scan_failed_failed(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "FAILED"}]}
+    )
+    with pytest.raises(ScanFailedError):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 

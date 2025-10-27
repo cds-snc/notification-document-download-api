@@ -5,14 +5,10 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
 
-from app.utils.scan_files import ScanVerdicts
+from app.utils.guardduty import SCAN_VERDICT_TAG, GuardDutyMalwareS3Verdicts
 
 
 class DocumentStoreError(Exception):
-    pass
-
-
-class SuspiciousContentError(Exception):
     pass
 
 
@@ -20,11 +16,16 @@ class MaliciousContentError(Exception):
     pass
 
 
+class ScanFailedError(Exception):
+    pass
+
+
 class ScanInProgressError(Exception):
     pass
 
 
-BAD_SCAN_VERDICTS = [ScanVerdicts.SUSPICIOUS.value, ScanVerdicts.MALICIOUS.value]
+class ScanUnsupportedError(Exception):
+    pass
 
 
 def get_document_key(service_id, document_id, sending_method=None):
@@ -105,7 +106,7 @@ class ScanFilesDocumentStore:
 
     def check_scan_verdict(self, service_id, document_id, sending_method):
         """
-        scan-files will write the scan verdict to as a tag on the S3 object.
+        GuardDuty Malware S3 scanning will write the scan verdict to as a tag on the S3 object.
         Inspect this value and raise an error accordingly.
         """
 
@@ -114,15 +115,16 @@ class ScanFilesDocumentStore:
                 Bucket=self.bucket, Key=self.get_document_key(service_id, document_id, sending_method)
             )
             tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
-            av_status = tag_dict["av-status"]
-            if av_status == ScanVerdicts.IN_PROGRESS.value:
-                raise ScanInProgressError("Content scanning is in progress")
-
-            if av_status == ScanVerdicts.SUSPICIOUS.value:
-                raise SuspiciousContentError("Suspicious content detected")
-
-            if av_status == ScanVerdicts.MALICIOUS.value:
+            av_status = tag_dict[SCAN_VERDICT_TAG]
+            if av_status == GuardDutyMalwareS3Verdicts.THREATS_FOUND:
                 raise MaliciousContentError("Malicious content detected")
+            elif av_status == GuardDutyMalwareS3Verdicts.UNSUPPORTED:
+                raise ScanUnsupportedError("Scan unsupported for document")
+            elif av_status in (
+                GuardDutyMalwareS3Verdicts.ACCESS_DENIED,
+                GuardDutyMalwareS3Verdicts.FAILED,
+            ):
+                raise ScanFailedError(f"Scan failed with status {av_status}")
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
         except KeyError:

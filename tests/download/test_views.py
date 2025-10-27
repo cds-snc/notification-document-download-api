@@ -7,8 +7,9 @@ import pytest
 from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
+    ScanFailedError,
     ScanInProgressError,
-    SuspiciousContentError,
+    ScanUnsupportedError,
 )
 from flask import url_for
 
@@ -155,12 +156,14 @@ def test_document_download_document_store_error(client, store, mocker):
         ["download.download_document", 200, ScanInProgressError(), 900],
         ["download.download_document", 200, ScanInProgressError(), 30],
         ["download.download_document", 423, MaliciousContentError(), 300],
-        ["download.download_document", 423, SuspiciousContentError(), 300],
+        ["download.download_document", 200, ScanFailedError(), 300],
+        ["download.download_document", 200, ScanUnsupportedError(), 300],
         ["download.download_document", 404, DocumentStoreError(), 300],
         ["download.download_document_b64", 200, ScanInProgressError(), 900],
         ["download.download_document_b64", 200, ScanInProgressError(), 30],
         ["download.download_document_b64", 404, MaliciousContentError(), 300],
-        ["download.download_document_b64", 404, SuspiciousContentError(), 300],
+        ["download.download_document_b64", 200, ScanFailedError(), 300],
+        ["download.download_document_b64", 200, ScanUnsupportedError(), 300],
         ["download.download_document_b64", 404, DocumentStoreError(), 300],
     ],
 )
@@ -190,7 +193,8 @@ def test_document_download_check_scan_verdict_errors(
     [
         [428, ScanInProgressError()],
         [423, MaliciousContentError()],
-        [423, SuspiciousContentError()],
+        [422, ScanFailedError()],
+        [422, ScanUnsupportedError()],
         [404, DocumentStoreError()],
     ],
 )
@@ -233,3 +237,29 @@ def test_scan_times_out(client, scan_files_store):
     )
     assert response.status_code == 408
     assert json.loads(response.data) == {"scan_verdict": "scan_timed_out"}
+
+
+def test_scan_failed_returns_scan_verdict(client, scan_files_store):
+    scan_files_store.check_scan_verdict.side_effect = ScanFailedError("scan failed")
+    response = client.post(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        )
+    )
+    assert response.status_code == 422
+    assert json.loads(response.data) == {"scan_verdict": "scan_failed"}
+
+
+def test_scan_unsupported_returns_scan_verdict(client, scan_files_store):
+    scan_files_store.check_scan_verdict.side_effect = ScanUnsupportedError("scan unsupported")
+    response = client.post(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        )
+    )
+    assert response.status_code == 422
+    assert json.loads(response.data) == {"scan_verdict": "scan_unsupported"}
