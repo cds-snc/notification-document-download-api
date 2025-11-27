@@ -148,7 +148,8 @@ def test_get_document_with_scan_in_progress(scan_files_store):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-def test_get_document_flagged_malicious(scan_files_store):
+def test_get_document_flagged_malicious_guardduty(scan_files_store):
+    """Test GuardDuty THREATS_FOUND verdict raises MaliciousContentError"""
     scan_files_store.s3.get_object_tagging = mock.Mock(
         return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "THREATS_FOUND"}]}
     )
@@ -156,7 +157,15 @@ def test_get_document_flagged_malicious(scan_files_store):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-def test_get_document_scan_unsupported(scan_files_store):
+def test_get_document_clean_guardduty(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "NO_THREATS_FOUND"}]}
+    )
+    result = scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+    assert result == "NO_THREATS_FOUND"
+
+
+def test_get_document_scan_unsupported_guardduty(scan_files_store):
     scan_files_store.s3.get_object_tagging = mock.Mock(
         return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "UNSUPPORTED"}]}
     )
@@ -164,7 +173,7 @@ def test_get_document_scan_unsupported(scan_files_store):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-def test_get_document_scan_failed_access_denied(scan_files_store):
+def test_get_document_scan_failed_access_denied_guardduty(scan_files_store):
     scan_files_store.s3.get_object_tagging = mock.Mock(
         return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "ACCESS_DENIED"}]}
     )
@@ -172,11 +181,69 @@ def test_get_document_scan_failed_access_denied(scan_files_store):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 
-def test_get_document_scan_failed_failed(scan_files_store):
+def test_get_document_scan_failed_failed_guardduty(scan_files_store):
     scan_files_store.s3.get_object_tagging = mock.Mock(
         return_value={"TagSet": [{"Key": "GuardDutyMalwareScanStatus", "Value": "FAILED"}]}
     )
     with pytest.raises(ScanFailedError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_get_document_flagged_malicious_scanfiles(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "malicious"}]})
+    with pytest.raises(MaliciousContentError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_get_document_flagged_suspicious_scanfiles(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "suspicious"}]})
+    with pytest.raises(MaliciousContentError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_get_document_clean_scanfiles(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "clean"}]})
+    result = scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+    assert result == "clean"
+
+
+def test_get_document_scan_failed_error_scanfiles(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "error"}]})
+    with pytest.raises(ScanFailedError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_get_document_scan_failed_unable_to_scan_scanfiles(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": [{"Key": "av-status", "Value": "unable_to_scan"}]})
+    with pytest.raises(ScanFailedError):
+        scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+
+
+def test_guardduty_tag_takes_precedence_over_scanfiles_clean(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={
+            "TagSet": [
+                {"Key": "GuardDutyMalwareScanStatus", "Value": "NO_THREATS_FOUND"},
+                {"Key": "av-status", "Value": "malicious"},
+            ]
+        }
+    )
+    # Should not raise an error since GuardDuty tag indicates clean
+    result = scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
+    assert result == "NO_THREATS_FOUND"
+
+
+def test_guardduty_tag_takes_precedence_over_scanfiles_malicious(scan_files_store):
+    scan_files_store.s3.get_object_tagging = mock.Mock(
+        return_value={
+            "TagSet": [
+                {"Key": "GuardDutyMalwareScanStatus", "Value": "THREATS_FOUND"},
+                {"Key": "av-status", "Value": "clean"},
+            ]
+        }
+    )
+    # Should raise MaliciousContentError since GuardDuty tag takes precedence
+    with pytest.raises(MaliciousContentError):
         scan_files_store.check_scan_verdict("service-id", "document-id", sending_method="link")
 
 

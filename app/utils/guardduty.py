@@ -1,6 +1,6 @@
 from enum import Enum
 
-SCAN_VERDICT_TAG = "GuardDutyMalwareScanStatus"
+GUARDDUTY_SCAN_TAG = "GuardDutyMalwareScanStatus"
 
 
 class GuardDutyMalwareS3Verdicts(str, Enum):

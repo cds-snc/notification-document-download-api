@@ -5,7 +5,8 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
 
-from app.utils.guardduty import SCAN_VERDICT_TAG, GuardDutyMalwareS3Verdicts
+from app.utils.guardduty import GUARDDUTY_SCAN_TAG, GuardDutyMalwareS3Verdicts
+from app.utils.scan_files import SCAN_FILES_SCAN_TAG, ScanVerdicts
 
 
 class DocumentStoreError(Exception):
@@ -115,20 +116,28 @@ class ScanFilesDocumentStore:
                 Bucket=self.bucket, Key=self.get_document_key(service_id, document_id, sending_method)
             )
             tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
-            av_status = tag_dict[SCAN_VERDICT_TAG]
-            if av_status == GuardDutyMalwareS3Verdicts.THREATS_FOUND:
+
+            # Support both GuardDuty and ScanFiles tags for scan verdicts during the transition to GuardDuty
+            av_status = tag_dict.get(GUARDDUTY_SCAN_TAG) or tag_dict.get(SCAN_FILES_SCAN_TAG)
+            if av_status is None or av_status == ScanVerdicts.IN_PROGRESS.value:
+                raise ScanInProgressError("Content scanning is in progress")
+            elif av_status in (
+                GuardDutyMalwareS3Verdicts.THREATS_FOUND,
+                ScanVerdicts.MALICIOUS.value,
+                ScanVerdicts.SUSPICIOUS.value,
+            ):
                 raise MaliciousContentError("Malicious content detected")
             elif av_status == GuardDutyMalwareS3Verdicts.UNSUPPORTED:
                 raise ScanUnsupportedError("Scan unsupported for document")
             elif av_status in (
                 GuardDutyMalwareS3Verdicts.ACCESS_DENIED,
                 GuardDutyMalwareS3Verdicts.FAILED,
+                ScanVerdicts.ERROR.value,
+                ScanVerdicts.UNABLE_TO_SCAN.value,
             ):
                 raise ScanFailedError(f"Scan failed with status {av_status}")
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
-        except KeyError:
-            raise ScanInProgressError("Content scanning is in progress")
         return av_status
 
     def get_object_age_seconds(self, service_id, document_id, sending_method) -> dict:
