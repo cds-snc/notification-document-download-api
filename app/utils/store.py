@@ -107,7 +107,7 @@ class ScanFilesDocumentStore:
 
     def check_scan_verdict(self, service_id, document_id, sending_method):
         """
-        GuardDuty Malware S3 scanning will write the scan verdict to as a tag on the S3 object.
+        S3 scanning will write the scan verdict as a tag on the S3 object.
         Inspect this value and raise an error accordingly.
         """
 

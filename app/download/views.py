@@ -54,15 +54,12 @@ def download_document(service_id, document_id):
     except ScanInProgressError as e:
         # return the document to the user in case the scan timed out
         current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
-        pass
     except ScanFailedError as e:
         # GuardDuty failed to scan the document. Log an error but allow download.
-        current_app.logger.error("GuardDuty failed to scan document: {}".format(e))
-        pass
+        current_app.logger.error("Failed to scan document: {}".format(e))
     except ScanUnsupportedError as e:
         # GuardDuty was unable to scan the document. Log a warning but allow download.
-        current_app.logger.warning("GuardDuty scan unsupported for document: {}".format(e))
-        pass
+        current_app.logger.warning("Scan unsupported for document: {}".format(e))
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
@@ -128,15 +125,12 @@ def download_document_b64(service_id, document_id):
         # at this point the email with the "link" type attachment has been sent
         # return the document to the user in case the scan timed out
         current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
-        pass
     except ScanFailedError as e:
         # GuardDuty failed to scan the document. Log an error but allow download.
-        current_app.logger.error("GuardDuty failed to scan document: {}".format(e))
-        pass
+        current_app.logger.error("Failed to scan document: {}".format(e))
     except ScanUnsupportedError as e:
         # GuardDuty was unable to scan the document. Log a warning but allow download.
-        current_app.logger.warning("GuardDuty scan unsupported for document: {}".format(e))
-        pass
+        current_app.logger.warning("Scan unsupported for document: {}".format(e))
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
