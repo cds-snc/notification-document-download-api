@@ -4,6 +4,8 @@ from enum import Enum
 import requests
 from flask import current_app
 
+SCAN_FILES_SCAN_TAG = "av-status"
+
 
 # from https://github.com/cds-snc/scan-files/blob/630dd2f3c9dfbaae5438d5e2b3a656f0ef057abd/api/models/Scan.py#L16-L23
 class ScanVerdicts(Enum):

@@ -13,8 +13,9 @@ from app import document_store, scan_files_document_store
 from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
+    ScanFailedError,
     ScanInProgressError,
-    SuspiciousContentError,
+    ScanUnsupportedError,
 )
 
 download_blueprint = Blueprint("download", __name__, url_prefix="")
@@ -23,6 +24,7 @@ MALICIOUS_CONTENT_ERROR_CODE = 423
 SCAN_IN_PROGRESS_ERROR_CODE = 428
 SCAN_TIMEOUT_ERROR_CODE = 408
 SCAN_TIMEOUT_SECONDS = 11 * 60
+SCAN_FAILED_ERROR_CODE = 422
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
@@ -40,7 +42,7 @@ def download_document(service_id, document_id):
 
     try:
         check_scan_verdict(service_id, document_id, sending_method)
-    except (MaliciousContentError, SuspiciousContentError) as e:
+    except MaliciousContentError as e:
         current_app.logger.info(
             "Malicious content detected, refused to download document: {}".format(e),
             extra={
@@ -52,7 +54,12 @@ def download_document(service_id, document_id):
     except ScanInProgressError as e:
         # return the document to the user in case the scan timed out
         current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
-        pass
+    except ScanFailedError as e:
+        # GuardDuty failed to scan the document. Log an error but allow download.
+        current_app.logger.error("Failed to scan document: {}".format(e))
+    except ScanUnsupportedError as e:
+        # GuardDuty was unable to scan the document. Log a warning but allow download.
+        current_app.logger.warning("Scan unsupported for document: {}".format(e))
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
@@ -105,7 +112,7 @@ def download_document_b64(service_id, document_id):
 
     try:
         check_scan_verdict(service_id, document_id, sending_method)
-    except (MaliciousContentError, SuspiciousContentError) as e:
+    except MaliciousContentError as e:
         current_app.logger.info(
             "Malicious content detected, refused to download document: {}".format(e),
             extra={
@@ -118,7 +125,12 @@ def download_document_b64(service_id, document_id):
         # at this point the email with the "link" type attachment has been sent
         # return the document to the user in case the scan timed out
         current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
-        pass
+    except ScanFailedError as e:
+        # GuardDuty failed to scan the document. Log an error but allow download.
+        current_app.logger.error("Failed to scan document: {}".format(e))
+    except ScanUnsupportedError as e:
+        # GuardDuty was unable to scan the document. Log a warning but allow download.
+        current_app.logger.warning("Scan unsupported for document: {}".format(e))
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
@@ -161,7 +173,7 @@ def check_scan_verdict(service_id, document_id, sending_method=None):
     sending_method = request.form.get("sending_method", sending_method)
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
-    except (MaliciousContentError, SuspiciousContentError) as e:
+    except MaliciousContentError as e:
         current_app.logger.info(
             "Malicious content detected, refused to download document: {}".format(e),
             extra={
@@ -192,6 +204,24 @@ def check_scan_verdict(service_id, document_id, sending_method=None):
             },
         )
         return jsonify(error=str(e)), SCAN_IN_PROGRESS_ERROR_CODE
+    except ScanUnsupportedError:
+        current_app.logger.warning(
+            "Scan unsupported for document",
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(scan_verdict="scan_unsupported"), SCAN_FAILED_ERROR_CODE
+    except ScanFailedError as e:
+        current_app.logger.error(
+            "Scan failed for document: {}".format(e),
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(scan_verdict="scan_failed"), SCAN_FAILED_ERROR_CODE
     except DocumentStoreError as e:
         current_app.logger.info(
             "Failed to get tags from document: {}".format(e),
