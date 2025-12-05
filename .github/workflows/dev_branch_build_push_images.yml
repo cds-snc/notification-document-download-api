@@ -16,7 +16,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build api image
+    name: Build Doc Download image
 
     steps:
       - name: Checkout
@@ -27,7 +27,7 @@ jobs:
       - name: Set image parameters
         id: img
         run: |
-          echo "image=api" >> "$GITHUB_OUTPUT"
+          echo "image=document-download" >> "$GITHUB_OUTPUT"
           echo "dockerfile=ci/Dockerfile" >> "$GITHUB_OUTPUT"
 
       - name: Build container image
@@ -55,7 +55,7 @@ jobs:
     needs: build
     uses: ./.github/workflows/reusable_push_ecr.yml
     with:
-      image-name: api
+      image-name: document-download
       image-tag-sha: ${{ github.sha }}
       aws-region: ca-central-1
       branch-name: ${{ github.ref_name }}
@@ -84,7 +84,7 @@ jobs:
   #   needs: build
   #   uses: ./.github/workflows/reusable_push_ecr.yml
   #   with:
-  #     image-name: api
+  #     image-name: document-download
   #     image-tag-sha: ${{ github.sha }}
   #     aws-region: ca-central-1
   #     branch-name: ${{ github.ref_name }}
@@ -97,7 +97,7 @@ jobs:
   #   needs: build
   #   uses: ./.github/workflows/reusable_push_ecr.yml
   #   with:
-  #     image-name: api
+  #     image-name: document-download
   #     image-tag-sha: ${{ github.sha }}
   #     aws-region: ca-central-1
   #     branch-name: ${{ github.ref_name }}
