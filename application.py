@@ -5,6 +5,7 @@ from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
 
 # Configure the xray_recorder
