@@ -229,16 +229,15 @@ def delete_document(service_id, document_id):
             },
         )
         return jsonify(status="ok", message="Document deleted"), 200
-    except DocumentStoreError as e:
-        current_app.logger.error(
-            "Failed to delete document: {}".format(e),
+    except DocumentStoreError:
+        current_app.logger.exception(
+            "Failed to delete document",
             extra={
                 "service_id": service_id,
                 "document_id": document_id,
-                "error_details": str(e),
             },
         )
-        return jsonify(error=str(e)), 400
+        return jsonify(error="Failed to delete document"), 400
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"])
