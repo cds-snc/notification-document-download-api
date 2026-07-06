@@ -4,6 +4,7 @@ from datetime import datetime
 
 import boto3
 from botocore.exceptions import ClientError as BotoClientError
+from flask import current_app
 
 from app.utils.guardduty import GUARDDUTY_SCAN_TAG, GuardDutyMalwareS3Verdicts
 from app.utils.scan_files import SCAN_FILES_SCAN_TAG, ScanVerdicts
@@ -30,7 +31,12 @@ class ScanUnsupportedError(Exception):
 
 
 def get_document_key(service_id, document_id, sending_method=None):
-    key_prefix = "tmp/" if sending_method == "attach" else ""
+    if sending_method == "attach":
+        key_prefix = "tmp/"
+    elif sending_method == "template_attach":
+        key_prefix = "template_attachments/"
+    else:
+        key_prefix = ""
     return f"{key_prefix}{service_id}/{document_id}"
 
 
@@ -46,33 +52,52 @@ class DocumentStore:
     def put(self, service_id, document_stream, sending_method, mimetype="application/pdf"):
         """
         returns dict {'id': 'some-uuid', 'encryption_key': b'32 byte encryption key'}
+        For template_attach, uses SSE-S3 and encryption_key is None.
         """
 
-        encryption_key = self.generate_encryption_key()
         document_id = str(uuid.uuid4())
 
-        self.s3.put_object(
-            Bucket=self.bucket,
-            Key=self.get_document_key(service_id, document_id, sending_method),
-            Body=document_stream,
-            ContentType=mimetype,
-            SSECustomerKey=encryption_key,
-            SSECustomerAlgorithm="AES256",
-        )
+        # Use SSE-S3 for template_attach, SSE-C for all others
+        if sending_method == "template_attach":
+            self.s3.put_object(
+                Bucket=self.bucket,
+                Key=self.get_document_key(service_id, document_id, sending_method),
+                Body=document_stream,
+                ContentType=mimetype,
+                ServerSideEncryption="AES256",
+            )
+            encryption_key = None
+        else:
+            encryption_key = self.generate_encryption_key()
+            self.s3.put_object(
+                Bucket=self.bucket,
+                Key=self.get_document_key(service_id, document_id, sending_method),
+                Body=document_stream,
+                ContentType=mimetype,
+                SSECustomerKey=encryption_key,
+                SSECustomerAlgorithm="AES256",
+            )
 
         return {"id": document_id, "encryption_key": encryption_key}
 
     def get(self, service_id, document_id, decryption_key, sending_method):
         """
-        decryption_key should be raw bytes
+        decryption_key should be raw bytes (not needed for template_attach)
         """
         try:
-            document = self.s3.get_object(
-                Bucket=self.bucket,
-                Key=self.get_document_key(service_id, document_id, sending_method),
-                SSECustomerKey=decryption_key,
-                SSECustomerAlgorithm="AES256",
-            )
+            # SSE-S3 for template_attach, SSE-C for all others
+            if sending_method == "template_attach":
+                document = self.s3.get_object(
+                    Bucket=self.bucket,
+                    Key=self.get_document_key(service_id, document_id, sending_method),
+                )
+            else:
+                document = self.s3.get_object(
+                    Bucket=self.bucket,
+                    Key=self.get_document_key(service_id, document_id, sending_method),
+                    SSECustomerKey=decryption_key,
+                    SSECustomerAlgorithm="AES256",
+                )
 
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
@@ -82,6 +107,30 @@ class DocumentStore:
             "mimetype": document["ContentType"],
             "size": document["ContentLength"],
         }
+
+    def delete(self, service_id, document_id, decryption_key, sending_method):
+        """
+        Delete a document from S3.
+        decryption_key should be raw bytes (not needed for template_attach).
+        """
+        try:
+            current_app.logger.info(f"Deleting document: {document_id} from service {service_id}")
+            # SSE-S3 for template_attach, SSE-C for all others
+            if sending_method == "template_attach":
+                self.s3.delete_object(
+                    Bucket=self.bucket,
+                    Key=self.get_document_key(service_id, document_id, sending_method),
+                )
+            else:
+                self.s3.delete_object(
+                    Bucket=self.bucket,
+                    Key=self.get_document_key(service_id, document_id, sending_method),
+                    SSECustomerKey=decryption_key,
+                    SSECustomerAlgorithm="AES256",
+                )
+        except BotoClientError as e:
+            current_app.logger.error("Failed to delete document: {}".format(e))
+            raise DocumentStoreError(e.response["Error"])
 
     def generate_encryption_key(self):
         return os.urandom(32)
@@ -139,6 +188,18 @@ class ScanFilesDocumentStore:
         except BotoClientError as e:
             raise DocumentStoreError(e.response["Error"])
         return av_status
+
+    def delete(self, service_id, document_id, sending_method):
+        """
+        Delete a document from S3.
+        """
+        try:
+            self.s3.delete_object(
+                Bucket=self.bucket,
+                Key=self.get_document_key(service_id, document_id, sending_method),
+            )
+        except BotoClientError as e:
+            raise DocumentStoreError(e.response["Error"])
 
     def get_object_age_seconds(self, service_id, document_id, sending_method) -> dict:
         """

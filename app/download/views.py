@@ -29,16 +29,19 @@ SCAN_FAILED_ERROR_CODE = 422
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["GET"])
 def download_document(service_id, document_id):
-    if "key" not in request.args:
-        return jsonify(error="Missing decryption key"), 400
-
     filename = request.args.get("filename")
     sending_method = request.args.get("sending_method", "link")
 
-    try:
-        key = base64_to_bytes(request.args["key"])
-    except ValueError:
-        return jsonify(error="Invalid decryption key"), 400
+    # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
+    if sending_method == "template_attach":
+        key = None
+    else:
+        if "key" not in request.args:
+            return jsonify(error="Missing decryption key"), 400
+        try:
+            key = base64_to_bytes(request.args["key"])
+        except ValueError:
+            return jsonify(error="Invalid decryption key"), 400
 
     try:
         check_scan_verdict(service_id, document_id, sending_method)
@@ -99,16 +102,19 @@ def download_document(service_id, document_id):
 
 @download_blueprint.route("/d/<base64_uuid:service_id>/<base64_uuid:document_id>", methods=["GET"])
 def download_document_b64(service_id, document_id):
-    if "key" not in request.args:
-        abort(404)
-
     filename = request.args.get("filename")
     sending_method = request.args.get("sending_method", "link")
 
-    try:
-        key = base64_to_bytes(request.args["key"])
-    except ValueError:
-        abort(404)
+    # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
+    if sending_method == "template_attach":
+        key = None
+    else:
+        if "key" not in request.args:
+            abort(404)
+        try:
+            key = base64_to_bytes(request.args["key"])
+        except ValueError:
+            abort(404)
 
     try:
         check_scan_verdict(service_id, document_id, sending_method)
@@ -166,6 +172,72 @@ def download_document_b64(service_id, document_id):
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
 
     return response
+
+
+@download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["DELETE"])
+def delete_document(service_id, document_id):
+    # Accept key and sending_method from either query params or request body
+    if request.is_json:
+        key_str = request.json.get("key")
+        sending_method = request.json.get("sending_method", "link")
+    else:
+        key_str = request.args.get("key")
+        sending_method = request.args.get("sending_method", "link")
+
+    current_app.logger.info(
+        "DELETE request received for document",
+        extra={
+            "service_id": service_id,
+            "document_id": document_id,
+            "sending_method": sending_method,
+            "has_key": key_str is not None,
+            "is_json": request.is_json,
+            "query_params": dict(request.args),
+        },
+    )
+
+    # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
+    if sending_method == "template_attach":
+        key = None
+        current_app.logger.info("Using SSE-S3 encryption (no key required) for template_attach")
+    else:
+        if not key_str:
+            current_app.logger.warning(
+                f"Missing decryption key in request for sending_method '{sending_method}'. "
+                f"Note: key is only optional for sending_method='template_attach'"
+            )
+            return jsonify(error="Missing decryption key. Key is required for all sending methods except 'template_attach'."), 400
+        try:
+            key = base64_to_bytes(key_str)
+        except ValueError as e:
+            current_app.logger.warning(f"Invalid decryption key format: {e}")
+            return jsonify(error="Invalid decryption key"), 400
+
+    try:
+        # Delete from both stores
+        current_app.logger.info(f"Deleting from document_store with sending_method: {sending_method}")
+        document_store.delete(service_id, document_id, key, sending_method)
+
+        current_app.logger.info(f"Deleting from scan_files_document_store with sending_method: {sending_method}")
+        scan_files_document_store.delete(service_id, document_id, sending_method)
+
+        current_app.logger.info(
+            "Successfully deleted document",
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(status="ok", message="Document deleted"), 200
+    except DocumentStoreError:
+        current_app.logger.exception(
+            "Failed to delete document",
+            extra={
+                "service_id": service_id,
+                "document_id": document_id,
+            },
+        )
+        return jsonify(error="Failed to delete document"), 400
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"])
