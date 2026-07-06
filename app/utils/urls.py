@@ -19,9 +19,11 @@ def get_api_download_url(service_id, document_id, key, filename):
     scheme = current_app.config["HTTP_SCHEME"]
     netloc = current_app.config["BACKEND_HOSTNAME"]
     path = "d/{}/{}".format(uuid_to_base64(service_id), uuid_to_base64(document_id))
-    query_params = {"filename": filename}
+    query_params = {}
     if key:
         query_params["key"] = bytes_to_base64(key)
+    if filename:
+        query_params["filename"] = filename
     query = urlencode(query_params, quote_via=quote)
 
     return urlunsplit([scheme, netloc, path, query, None])
