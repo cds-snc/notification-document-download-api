@@ -51,13 +51,13 @@ def upload_document(service_id):
                 "direct_file_url": get_direct_file_url(
                     service_id=service_id,
                     document_id=document["id"],
-                    key=document["encryption_key"],
+                    key=document.get("encryption_key", ""),
                     sending_method=sending_method,
                 ),
                 "url": get_api_download_url(
                     service_id=service_id,
                     document_id=document["id"],
-                    key=document["encryption_key"],
+                    key=document.get("encryption_key", ""),
                     filename=filename,
                 ),
                 "filename": filename,
