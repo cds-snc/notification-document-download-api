@@ -107,6 +107,54 @@ def test_document_download_with_filename(client, store, endpoint, mocker):
     )
 
 
+def test_document_download_template_attach_skips_scan_verdict(client, store, mocker):
+    mock_check = mocker.patch("app.download.views.check_scan_verdict")
+    store.get.return_value = {
+        "body": io.BytesIO(b"PDF document contents"),
+        "mimetype": "application/pdf",
+        "size": 100,
+    }
+
+    response = client.get(
+        url_for(
+            "download.download_document",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+            sending_method="template_attach",
+        )
+    )
+
+    assert response.status_code == 200
+    assert response.get_data() == b"PDF document contents"
+    mock_check.assert_not_called()
+    store.get.assert_called_once_with(
+        UUID("00000000-0000-0000-0000-000000000000"),
+        UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+        None,
+        "template_attach",
+    )
+
+
+def test_document_download_template_attach_no_key_required(client, store, mocker):
+    mocker.patch("app.download.views.check_scan_verdict")
+    store.get.return_value = {
+        "body": io.BytesIO(b"PDF document contents"),
+        "mimetype": "application/pdf",
+        "size": 100,
+    }
+
+    response = client.get(
+        url_for(
+            "download.download_document",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+            sending_method="template_attach",
+        )
+    )
+
+    assert response.status_code == 200
+
+
 def test_document_download_without_decryption_key(client, store):
     response = client.get(
         url_for(
