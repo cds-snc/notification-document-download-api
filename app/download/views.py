@@ -53,7 +53,7 @@ def download_document(service_id, document_id):
                     "document_id": document_id,
                 },
             )
-            return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
+            return jsonify(error="Document download blocked"), MALICIOUS_CONTENT_ERROR_CODE
         except ScanInProgressError as e:
             # return the document to the user in case the scan timed out
             current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
