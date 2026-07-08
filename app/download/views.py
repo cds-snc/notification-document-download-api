@@ -43,35 +43,35 @@ def download_document(service_id, document_id):
         except ValueError:
             return jsonify(error="Invalid decryption key"), 400
 
-    try:
-        check_scan_verdict(service_id, document_id, sending_method)
-    except MaliciousContentError as e:
-        current_app.logger.info(
-            "Malicious content detected, refused to download document: {}".format(e),
-            extra={
-                "service_id": service_id,
-                "document_id": document_id,
-            },
-        )
-        return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
-    except ScanInProgressError as e:
-        # return the document to the user in case the scan timed out
-        current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
-    except ScanFailedError as e:
-        # GuardDuty failed to scan the document. Log an error but allow download.
-        current_app.logger.error("Failed to scan document: {}".format(e))
-    except ScanUnsupportedError as e:
-        # GuardDuty was unable to scan the document. Log a warning but allow download.
-        current_app.logger.warning("Scan unsupported for document: {}".format(e))
-    except DocumentStoreError as e:
-        current_app.logger.info(
-            "Failed to get tags from document: {}".format(e),
-            extra={
-                "service_id": service_id,
-                "document_id": document_id,
-            },
-        )
-        abort(404)
+        try:
+            check_scan_verdict(service_id, document_id, sending_method)
+        except MaliciousContentError as e:
+            current_app.logger.info(
+                "Malicious content detected, refused to download document: {}".format(e),
+                extra={
+                    "service_id": service_id,
+                    "document_id": document_id,
+                },
+            )
+            return jsonify(error=str(e)), MALICIOUS_CONTENT_ERROR_CODE
+        except ScanInProgressError as e:
+            # return the document to the user in case the scan timed out
+            current_app.logger.info("Scan is in progress but we will return the link, error is: {}".format(e))
+        except ScanFailedError as e:
+            # GuardDuty failed to scan the document. Log an error but allow download.
+            current_app.logger.error("Failed to scan document: {}".format(e))
+        except ScanUnsupportedError as e:
+            # GuardDuty was unable to scan the document. Log a warning but allow download.
+            current_app.logger.warning("Scan unsupported for document: {}".format(e))
+        except DocumentStoreError as e:
+            current_app.logger.info(
+                "Failed to get tags from document: {}".format(e),
+                extra={
+                    "service_id": service_id,
+                    "document_id": document_id,
+                },
+            )
+            abort(404)
 
     try:
         document = document_store.get(service_id, document_id, key, sending_method)
