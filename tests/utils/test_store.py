@@ -49,14 +49,14 @@ def test_document_store_init_app(app, store):
 
 
 def test_get_document_key(store):
-    assert store.get_document_key("service-id", "doc-id") == "service-id/doc-id"
+    assert store.get_document_key("service-id", "doc-id") == "api_link/service-id/doc-id"
 
 
 def test_document_key_with_uuid(store):
     service_id = uuid.uuid4()
     document_id = uuid.uuid4()
 
-    assert store.get_document_key(service_id, document_id) == "{}/{}".format(str(service_id), str(document_id))
+    assert store.get_document_key(service_id, document_id) == "api_link/{}/{}".format(str(service_id), str(document_id))
 
 
 def test_put_document(store):
@@ -71,7 +71,7 @@ def test_put_document(store):
         Body=mock.ANY,
         Bucket="test-bucket",
         ContentType="application/pdf",
-        Key=Matcher("document key", lambda x: x.startswith("service-id/") and len(x) == 11 + 36),
+        Key=Matcher("document key", lambda x: x.startswith("api_link/service-id/") and len(x) == 20 + 36),
         SSECustomerKey=ret["encryption_key"],
         SSECustomerAlgorithm="AES256",
     )
@@ -91,7 +91,7 @@ def test_put_document_attach_tmp_dir(store):
         ContentType="application/pdf",
         Key=Matcher(
             "document key",
-            lambda x: x.startswith("tmp/service-id/") and len(x) == 15 + 36,
+            lambda x: x.startswith("api_attachments/service-id/") and len(x) == 27 + 36,
         ),
         SSECustomerKey=ret["encryption_key"],
         SSECustomerAlgorithm="AES256",
@@ -107,7 +107,7 @@ def test_get_document(store):
 
     store.s3.get_object.assert_called_once_with(
         Bucket="test-bucket",
-        Key="service-id/document-id",
+        Key="api_link/service-id/document-id",
         SSECustomerAlgorithm="AES256",
         # 32 null bytes
         SSECustomerKey=bytes(32),
@@ -126,7 +126,7 @@ def test_get_document_attach_tmp_dir(store):
 
     store.s3.get_object.assert_called_once_with(
         Bucket="test-bucket",
-        Key="tmp/service-id/document-id",
+        Key="api_attachments/service-id/document-id",
         SSECustomerAlgorithm="AES256",
         # 32 null bytes
         SSECustomerKey=bytes(32),
