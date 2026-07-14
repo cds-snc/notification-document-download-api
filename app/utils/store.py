@@ -32,11 +32,11 @@ class ScanUnsupportedError(Exception):
 
 def get_document_key(service_id, document_id, sending_method=None):
     if sending_method == "attach":
-        key_prefix = "tmp/"
+        key_prefix = "api_attachments/"
     elif sending_method == "template_attach":
         key_prefix = "template_attachments/"
     else:
-        key_prefix = ""
+        key_prefix = "api_link/"
     return f"{key_prefix}{service_id}/{document_id}"
 
 
