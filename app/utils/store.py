@@ -32,11 +32,11 @@ class ScanUnsupportedError(Exception):
 
 def get_document_key(service_id, document_id, sending_method=None):
     if sending_method == "attach":
-        key_prefix = "tmp/"
+        key_prefix = "api_attachments/"
     elif sending_method == "template_attach":
         key_prefix = "template_attachments/"
     else:
-        key_prefix = ""
+        key_prefix = "api_link/"
     return f"{key_prefix}{service_id}/{document_id}"
 
 
@@ -84,29 +84,64 @@ class DocumentStore:
         """
         decryption_key should be raw bytes (not needed for template_attach)
         """
+        new_key = self.get_document_key(service_id, document_id, sending_method)
+
         try:
             # SSE-S3 for template_attach, SSE-C for all others
             if sending_method == "template_attach":
                 document = self.s3.get_object(
                     Bucket=self.bucket,
-                    Key=self.get_document_key(service_id, document_id, sending_method),
+                    Key=new_key,
                 )
             else:
                 document = self.s3.get_object(
                     Bucket=self.bucket,
-                    Key=self.get_document_key(service_id, document_id, sending_method),
+                    Key=new_key,
                     SSECustomerKey=decryption_key,
                     SSECustomerAlgorithm="AES256",
                 )
 
+            return {
+                "body": document["Body"],
+                "mimetype": document["ContentType"],
+                "size": document["ContentLength"],
+            }
         except BotoClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey" and sending_method != "template_attach":
+                # Fallback to old path structure for backward compatibility
+                # Old structure: {service_id}/{document_id} for link, tmp/{service_id}/{document_id} for attach
+                old_key = self._get_old_document_key(service_id, document_id, sending_method)
+
+                try:
+                    current_app.logger.info(f"File not found at new path {new_key}, trying old path {old_key}")
+                    document = self.s3.get_object(
+                        Bucket=self.bucket,
+                        Key=old_key,
+                        SSECustomerKey=decryption_key,
+                        SSECustomerAlgorithm="AES256",
+                    )
+                    current_app.logger.info(f"Found file at old path {old_key}, will serve from legacy location")
+
+                    return {
+                        "body": document["Body"],
+                        "mimetype": document["ContentType"],
+                        "size": document["ContentLength"],
+                    }
+                except BotoClientError:
+                    pass  # Fall through to raise original error
+
             raise DocumentStoreError(e.response["Error"])
 
-        return {
-            "body": document["Body"],
-            "mimetype": document["ContentType"],
-            "size": document["ContentLength"],
-        }
+    def _get_old_document_key(self, service_id, document_id, sending_method):
+        """
+        Get the old path structure before folder reorganization.
+        Used for backward compatibility during migration.
+        """
+        if sending_method == "attach":
+            return f"tmp/{service_id}/{document_id}"
+        else:
+            # link mode or None
+            return f"{service_id}/{document_id}"
 
     def delete(self, service_id, document_id, decryption_key, sending_method):
         """
