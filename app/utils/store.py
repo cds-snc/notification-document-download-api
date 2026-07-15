@@ -176,10 +176,23 @@ class ScanFilesDocumentStore:
         self.s3 = boto3.client("s3")
         self.bucket = bucket
         self.get_document_key = get_document_key
+        self._get_old_document_key = staticmethod(self._get_old_document_key_impl)
 
     def init_app(self, app):
         self.bucket = app.config["SCAN_FILES_DOCUMENTS_BUCKET"]
         print(f"self.bucket: {self.bucket}")
+
+    @staticmethod
+    def _get_old_document_key_impl(service_id, document_id, sending_method):
+        """
+        Get the old path structure before folder reorganization.
+        Used for backward compatibility during migration.
+        """
+        if sending_method == "attach":
+            return f"tmp/{service_id}/{document_id}"
+        else:
+            # link mode or None
+            return f"{service_id}/{document_id}"
 
     def put(self, service_id, document_id, document_stream, sending_method, mimetype="application/pdf"):
         self.s3.put_object(
@@ -193,35 +206,48 @@ class ScanFilesDocumentStore:
         """
         S3 scanning will write the scan verdict as a tag on the S3 object.
         Inspect this value and raise an error accordingly.
+        Falls back to old path structure for backward compatibility during migration.
         """
 
-        try:
-            response = self.s3.get_object_tagging(
-                Bucket=self.bucket, Key=self.get_document_key(service_id, document_id, sending_method)
-            )
-            tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
+        new_key = self.get_document_key(service_id, document_id, sending_method)
 
-            # Support both GuardDuty and ScanFiles tags for scan verdicts during the transition to GuardDuty
-            av_status = tag_dict.get(GUARDDUTY_SCAN_TAG) or tag_dict.get(SCAN_FILES_SCAN_TAG)
-            if av_status is None or av_status == ScanVerdicts.IN_PROGRESS.value:
-                raise ScanInProgressError("Content scanning is in progress")
-            elif av_status in (
-                GuardDutyMalwareS3Verdicts.THREATS_FOUND,
-                ScanVerdicts.MALICIOUS.value,
-                ScanVerdicts.SUSPICIOUS.value,
-            ):
-                raise MaliciousContentError("Malicious content detected")
-            elif av_status == GuardDutyMalwareS3Verdicts.UNSUPPORTED:
-                raise ScanUnsupportedError("Scan unsupported for document")
-            elif av_status in (
-                GuardDutyMalwareS3Verdicts.ACCESS_DENIED,
-                GuardDutyMalwareS3Verdicts.FAILED,
-                ScanVerdicts.ERROR.value,
-                ScanVerdicts.UNABLE_TO_SCAN.value,
-            ):
-                raise ScanFailedError(f"Scan failed with status {av_status}")
+        try:
+            response = self.s3.get_object_tagging(Bucket=self.bucket, Key=new_key)
         except BotoClientError as e:
-            raise DocumentStoreError(e.response["Error"])
+            # Fallback to old path for legacy files (only if NoSuchKey and not template_attach)
+            if e.response["Error"]["Code"] == "NoSuchKey" and sending_method != "template_attach":
+                old_key = self._get_old_document_key(service_id, document_id, sending_method)
+                try:
+                    current_app.logger.info(f"Scan verdict not found at new path {new_key}, trying old path {old_key}")
+                    response = self.s3.get_object_tagging(Bucket=self.bucket, Key=old_key)
+                    current_app.logger.info(f"Found object at old path {old_key} for scan verdict check")
+                except BotoClientError:
+                    # Object doesn't exist at either path
+                    raise DocumentStoreError(e.response["Error"])
+            else:
+                raise DocumentStoreError(e.response["Error"])
+
+        tag_dict = {t["Key"]: t["Value"] for t in response["TagSet"]}
+
+        # Support both GuardDuty and ScanFiles tags for scan verdicts during the transition to GuardDuty
+        av_status = tag_dict.get(GUARDDUTY_SCAN_TAG) or tag_dict.get(SCAN_FILES_SCAN_TAG)
+        if av_status is None or av_status == ScanVerdicts.IN_PROGRESS.value:
+            raise ScanInProgressError("Content scanning is in progress")
+        elif av_status in (
+            GuardDutyMalwareS3Verdicts.THREATS_FOUND,
+            ScanVerdicts.MALICIOUS.value,
+            ScanVerdicts.SUSPICIOUS.value,
+        ):
+            raise MaliciousContentError("Malicious content detected")
+        elif av_status == GuardDutyMalwareS3Verdicts.UNSUPPORTED:
+            raise ScanUnsupportedError("Scan unsupported for document")
+        elif av_status in (
+            GuardDutyMalwareS3Verdicts.ACCESS_DENIED,
+            GuardDutyMalwareS3Verdicts.FAILED,
+            ScanVerdicts.ERROR.value,
+            ScanVerdicts.UNABLE_TO_SCAN.value,
+        ):
+            raise ScanFailedError(f"Scan failed with status {av_status}")
         return av_status
 
     def delete(self, service_id, document_id, sending_method):
@@ -240,31 +266,47 @@ class ScanFilesDocumentStore:
         """
         Returns the object age in seconds, as well as some data for debugging purposes.
         Returns {"age_seconds": 0, ... } if the age would be negative.
+        Falls back to old path structure for backward compatibility during migration.
         """
+
+        new_key = self.get_document_key(service_id, document_id, sending_method)
 
         try:
             # ETag doesn't matter, but I need to specify ObjectAttributes
             response = self.s3.get_object_attributes(
                 Bucket=self.bucket,
-                Key=self.get_document_key(service_id, document_id, sending_method),
+                Key=new_key,
                 ObjectAttributes=["ETag"],
             )
-            last_modified = response["ResponseMetadata"]["HTTPHeaders"]["last-modified"]
-            last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
-            now = datetime.now()
-            # last_modified is rounded to the nearest second and could be in the future
-            if last_modified_parsed > now:
-                age_seconds = 0
-            else:
-                age = now - last_modified_parsed
-                age_seconds = age.seconds
-
-            return {
-                "age_seconds": age_seconds,
-                "last_modified": last_modified,
-                "last_modified_parsed": last_modified_parsed,
-                "now": now,
-            }
-
         except BotoClientError as e:
-            raise DocumentStoreError(e.response["Error"])
+            # Fallback to old path for legacy files
+            if e.response["Error"]["Code"] == "NoSuchKey" and sending_method != "template_attach":
+                old_key = self._get_old_document_key(service_id, document_id, sending_method)
+                try:
+                    current_app.logger.info(f"Object not found at new path {new_key}, checking old path {old_key}")
+                    response = self.s3.get_object_attributes(
+                        Bucket=self.bucket,
+                        Key=old_key,
+                        ObjectAttributes=["ETag"],
+                    )
+                except BotoClientError as fallback_error:
+                    raise DocumentStoreError(fallback_error.response["Error"])
+            else:
+                raise DocumentStoreError(e.response["Error"])
+
+        last_modified = response["ResponseMetadata"]["HTTPHeaders"]["last-modified"]
+        last_modified_parsed = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+        now = datetime.now()
+        # last_modified is rounded to the nearest second and could be in the future
+        if last_modified_parsed > now:
+            age_seconds = 0
+        else:
+            age = now - last_modified_parsed
+            age_seconds = age.seconds
+
+        return {
+            "age_seconds": age_seconds,
+            "last_modified": last_modified,
+            "last_modified_parsed": last_modified_parsed,
+            "now": now,
+        }
