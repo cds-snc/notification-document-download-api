@@ -130,7 +130,7 @@ class DocumentStore:
                 except BotoClientError as fallback_error:
                     if fallback_error.response["Error"]["Code"] != "NoSuchKey":
                         raise DocumentStoreError(fallback_error.response["Error"])
-                    pass  # Fall through to raise original error when both paths are missing
+                    # Fall through to raise original error when both paths are missing
 
             raise DocumentStoreError(e.response["Error"])
 
