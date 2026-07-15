@@ -127,8 +127,10 @@ class DocumentStore:
                         "mimetype": document["ContentType"],
                         "size": document["ContentLength"],
                     }
-                except BotoClientError:
-                    pass  # Fall through to raise original error
+                except BotoClientError as fallback_error:
+                    if fallback_error.response["Error"]["Code"] != "NoSuchKey":
+                        raise DocumentStoreError(fallback_error.response["Error"])
+                    pass  # Fall through to raise original error when both paths are missing
 
             raise DocumentStoreError(e.response["Error"])
 
@@ -221,8 +223,10 @@ class ScanFilesDocumentStore:
                     current_app.logger.info(f"Scan verdict not found at new path {new_key}, trying old path {old_key}")
                     response = self.s3.get_object_tagging(Bucket=self.bucket, Key=old_key)
                     current_app.logger.info(f"Found object at old path {old_key} for scan verdict check")
-                except BotoClientError:
-                    # Object doesn't exist at either path
+                except BotoClientError as fallback_error:
+                    # Preserve real fallback failure modes instead of masking them as NoSuchKey.
+                    if fallback_error.response["Error"]["Code"] != "NoSuchKey":
+                        raise DocumentStoreError(fallback_error.response["Error"])
                     raise DocumentStoreError(e.response["Error"])
             else:
                 raise DocumentStoreError(e.response["Error"])
