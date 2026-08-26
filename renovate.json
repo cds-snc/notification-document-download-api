@@ -5,5 +5,8 @@
   ],
   "ignorePaths": [
     "requirements.txt"
+  ],
+  "ignoreDeps": [
+    "cds-snc/notification-pr-bot"
   ]
 }
