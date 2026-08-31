@@ -38,6 +38,18 @@ def upload_document(service_id):
     if (filename or "").lower().endswith(".csv") and mimetype == "text/plain":
         mimetype = "text/csv"
 
+    # OOXML formats (.xlsx, .docx, .pptx) are ZIP containers and are detected
+    # as application/zip by libmagic. Override using the filename extension,
+    # consistent with the CSV fix above.
+    if (filename or "").lower().endswith(".xlsx") and mimetype == "application/zip":
+        mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    if (filename or "").lower().endswith(".docx") and mimetype == "application/zip":
+        mimetype = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    if (filename or "").lower().endswith(".pptx") and mimetype == "application/zip":
+        mimetype = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+
     sending_method = request.form.get("sending_method")
 
     document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
