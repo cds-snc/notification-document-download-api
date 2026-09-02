@@ -91,6 +91,13 @@ def test_document_upload_returns_link_to_api(
     "content, filename, expected_extension, expected_mime, expected_size",
     [
         (b"%PDF-1.4 file contents", "file.pdf", "pdf", "application/pdf", 22),
+        (
+            b"%PDF-1.4 file contents",
+            "Estimation de voyage - John Doe - Ste. Marie Canada - 2026-09-08.pdf",
+            "pdf",
+            "application/pdf",
+            22,
+        ),
         (b"Canada", "text.txt", "txt", "text/plain", 6),
         (b"Canada", "noextension", None, "text/plain", 6),
         (b"foo,bar", "file.csv", "csv", "text/csv", 7),
