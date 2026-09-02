@@ -1,5 +1,3 @@
-import pathlib
-
 from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store, scan_files_document_store
@@ -31,7 +29,7 @@ def upload_document(service_id):
     filename = request.form.get("filename")
     file_extension = None
     if filename and "." in filename:
-        file_extension = "".join(pathlib.Path(filename.lower()).suffixes).lstrip(".")
+        file_extension = filename.rsplit(".", 1)[-1].lower()
 
     # Our MIME type auto-detection resolves CSV content as text/plain,
     # so we fix that if possible
