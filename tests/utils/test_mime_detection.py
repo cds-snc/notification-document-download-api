@@ -1,0 +1,39 @@
+import io
+from pathlib import Path
+
+import pytest
+from app.utils import get_mime_type
+
+MIME_FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "mime"
+LONG_PAYLOAD_SIZE = 2050
+
+REAL_MIME_SAMPLES = [
+    ("application/CDFV2", "xls_sample.xls"),
+    ("application/msword", "doc_sample.doc"),
+    ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx_sample.docx"),
+    ("image/jpeg", "jpg_sample.jpg"),
+    ("application/vnd.apple.numbers", "numbers_sample.numbers"),
+    ("application/pdf", "pdf_sample.pdf"),
+    ("image/png", "png_sample.png"),
+    ("text/csv", "csv_sample.csv"),
+    ("text/plain", "txt_sample.txt"),
+    ("application/vnd.ms-excel", "xls_sample.xls"),
+    ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx_sample.xlsx"),
+]
+
+
+@pytest.mark.parametrize("expected_mime, fixture_name", REAL_MIME_SAMPLES)
+def test_short_mime_detection(expected_mime, fixture_name):
+    payload = (MIME_FIXTURE_DIR / fixture_name).read_bytes()[:2047]
+
+    assert len(payload) < 2048
+    assert get_mime_type(io.BytesIO(payload)) == expected_mime
+
+
+@pytest.mark.parametrize("expected_mime, fixture_name", REAL_MIME_SAMPLES)
+def test_long_mime_detection(expected_mime, fixture_name):
+    payload = (MIME_FIXTURE_DIR / fixture_name).read_bytes()
+    payload += b" " * max(0, LONG_PAYLOAD_SIZE - len(payload))
+
+    assert len(payload) > 2049
+    assert get_mime_type(io.BytesIO(payload)) == expected_mime
