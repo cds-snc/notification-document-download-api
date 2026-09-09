@@ -282,12 +282,8 @@ def test_document_upload_extra_mime_type_rejects_unsupported_multipart_filename(
     assert response.status_code == 400
 
 
-def test_document_upload_accepts_mismatched_builtin_mime_and_extension(client, mocker, store, scan_files_store):
+def test_document_upload_rejects_unapproved_builtin_mime_and_extension(client, mocker):
     mocker.patch("app.upload.views.get_mime_type", return_value="application/pdf")
-    store.put.return_value = {
-        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
-        "encryption_key": bytes(32),
-    }
 
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
@@ -295,7 +291,7 @@ def test_document_upload_accepts_mismatched_builtin_mime_and_extension(client, m
         data={"document": (io.BytesIO(b"PDF contents"), "file.csv")},
     )
 
-    assert response.status_code == 201
+    assert response.status_code == 400
 
 
 def test_document_upload_accepts_jpg_for_jpeg_mime(client, mocker, store, scan_files_store):
@@ -314,9 +310,18 @@ def test_document_upload_accepts_jpg_for_jpeg_mime(client, mocker, store, scan_f
     assert response.status_code == 201
 
 
-@pytest.mark.parametrize("mimetype", ["text/plain", "text/csv"])
-def test_document_upload_accepts_log_for_text_mime(client, mocker, store, scan_files_store, mimetype):
+@pytest.mark.parametrize(
+    "mimetype, filename",
+    [
+        ("text/plain", "file.json"),
+        ("text/plain", "file.log"),
+        ("text/csv", "file.log"),
+        ("image/jpeg", "file.png"),
+    ],
+)
+def test_document_upload_accepts_configured_mime_compatibility(client, mocker, store, scan_files_store, mimetype, filename):
     mocker.patch("app.upload.views.get_mime_type", return_value=mimetype)
+    warning = mocker.patch("app.upload.views.current_app.logger.warning")
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
@@ -325,10 +330,11 @@ def test_document_upload_accepts_log_for_text_mime(client, mocker, store, scan_f
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
         content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"log contents"), "file.log")},
+        data={"document": (io.BytesIO(b"file contents"), filename)},
     )
 
     assert response.status_code == 201
+    warning.assert_called_once_with("Allowing known MIME type mismatch: %s with filename extension %s", mimetype, filename[4:])
 
 
 def test_document_file_size_just_right(client, store, scan_files_store):

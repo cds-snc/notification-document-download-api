@@ -24,8 +24,8 @@ class Config(metaclass=MetaFlaskEnv):
     ALLOWED_MIME_TYPES = {
         "application/pdf": [".pdf"],
         "application/CDFV2": [".doc", ".xls"],
-        "text/csv": [".csv", ".log"],
-        "text/plain": [".txt", ".log"],
+        "text/csv": [".csv"],
+        "text/plain": [".txt"],
         "application/msword": [".doc"],
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
         "image/jpeg": [".jpg", ".jpeg"],
@@ -33,6 +33,13 @@ class Config(metaclass=MetaFlaskEnv):
         "application/vnd.ms-excel": [".xls"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
         "application/vnd.apple.numbers": [],  # "Numbers" app on macOS; no supported extension yet
+    }
+    # These MIME/extension mismatches were observed in production uploads.
+    # Keep them separate from the normal mappings so unexpected mismatches remain distinguishable.
+    MIME_EXTENSION_COMPATIBILITY = {
+        "text/plain": [".json", ".log"],
+        "text/csv": [".log"],
+        "image/jpeg": [".png"],
     }
     EXTRA_MIME_TYPES = os.getenv("EXTRA_MIME_TYPES", "")
 

@@ -37,8 +37,7 @@ def upload_document(service_id):
     if validation_filename and validation_filename.lower().endswith(".csv") and mimetype == "text/plain":
         mimetype = "text/csv"
 
-    # Unknown MIME types are rejected; known MIME/extension mismatches are logged
-    # but accepted so unusual user-supplied filenames do not break uploads.
+    # Unknown MIME types and unapproved MIME/extension mismatches are rejected.
     if not mime_type_is_allowed(mimetype, service_id, filename_suffix if validation_filename else None):
         return (
             jsonify(
@@ -86,9 +85,12 @@ def upload_document(service_id):
 
 def mime_type_is_allowed(mimetype, service_id, file_extension=None):
     allowed_extensions = current_app.config["ALLOWED_MIME_TYPES"].get(mimetype)
-    if allowed_extensions is not None and file_extension:
-        if file_extension not in allowed_extensions:
-            current_app.logger.warning("MIME type %s does not match filename extension %s", mimetype, file_extension)
+    if allowed_extensions is not None and file_extension in allowed_extensions:
+        return True
+
+    compatibility_extensions = current_app.config["MIME_EXTENSION_COMPATIBILITY"].get(mimetype, [])
+    if file_extension in compatibility_extensions:
+        current_app.logger.warning("Allowing known MIME type mismatch: %s with filename extension %s", mimetype, file_extension)
         return True
 
     return any(
