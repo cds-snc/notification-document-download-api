@@ -1,3 +1,5 @@
+import pathlib
+
 from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store, scan_files_document_store
@@ -14,30 +16,43 @@ def upload_document(service_id):
     if "document" not in request.files:
         return jsonify(error="No document upload"), 400
 
+    # The API filename controls response/download metadata; the multipart filename
+    # is a validation fallback for clients that omit the API field.
+    filename = request.form.get("filename")
+    file_extension = None
+    validation_filename = filename or request.files["document"].filename
+    if validation_filename:
+        filename_suffix = pathlib.Path(validation_filename.lower()).suffix
+        # Reject path-like names before using the filename for extension checks.
+        if not filename_is_safe(validation_filename):
+            return jsonify(error="Unsupported or unsafe filename"), 400
+        if filename:
+            file_extension = filename_suffix.lstrip(".")
+
+    # Detect the content from the upload stream, then apply compatibility fixes
+    # for formats that libmagic commonly classifies too generally.
     mimetype = get_mime_type(request.files["document"])
-    if not mime_type_is_allowed(mimetype, service_id):
+    # Our MIME type auto-detection resolves CSV content as text/plain,
+    # so we fix that if possible before checking the MIME allowlist.
+    if validation_filename and validation_filename.lower().endswith(".csv") and mimetype == "text/plain":
+        mimetype = "text/csv"
+
+    # Unknown MIME types are rejected; known MIME/extension mismatches are logged
+    # but accepted so unusual user-supplied filenames do not break uploads.
+    if not mime_type_is_allowed(mimetype, service_id, filename_suffix if validation_filename else None):
         return (
             jsonify(
                 error="Unsupported document type '{}'. Supported types are: {}".format(
-                    mimetype, current_app.config["ALLOWED_MIME_TYPES"]
+                    mimetype, list(current_app.config["ALLOWED_MIME_TYPES"])
                 )
             ),
             400,
         )
     file_content = request.files["document"].read()
 
-    filename = request.form.get("filename")
-    file_extension = None
-    if filename and "." in filename:
-        file_extension = filename.rsplit(".", 1)[-1].lower()
-
-    # Our MIME type auto-detection resolves CSV content as text/plain,
-    # so we fix that if possible
-    if (filename or "").lower().endswith(".csv") and mimetype == "text/plain":
-        mimetype = "text/csv"
-
     sending_method = request.form.get("sending_method")
 
+    # Store the document and an unencrypted scan copy with the detected MIME type.
     document = document_store.put(service_id, file_content, sending_method=sending_method, mimetype=mimetype)
     scan_files_document_store.put(service_id, document["id"], file_content, sending_method=sending_method, mimetype=mimetype)
 
@@ -69,11 +84,21 @@ def upload_document(service_id):
     )
 
 
-def mime_type_is_allowed(mimetype, service_id):
-    if mimetype in current_app.config["ALLOWED_MIME_TYPES"]:
+def mime_type_is_allowed(mimetype, service_id, file_extension=None):
+    allowed_extensions = current_app.config["ALLOWED_MIME_TYPES"].get(mimetype)
+    if allowed_extensions is not None and file_extension:
+        if file_extension not in allowed_extensions:
+            current_app.logger.warning("MIME type %s does not match filename extension %s", mimetype, file_extension)
         return True
 
-    # Payload is formatted like "service_id1:mime1,service_id2:mime2"
-    # Example:
-    # "fccd5d86-afd6-491b-afa8-2ff592e1404f:application/octet-stream,95365643-8126-46f1-a222-e0c51fa918f2:application/json"
-    return f"{service_id}:{mimetype}" in current_app.config["EXTRA_MIME_TYPES"]
+    return any(
+        entry_parts[:2] == [str(service_id), mimetype] and (len(entry_parts) == 2 or entry_parts[2] == file_extension)
+        for entry in current_app.config["EXTRA_MIME_TYPES"].split(",")
+        for entry_parts in [entry.split(":", 2)]
+    )
+
+
+def filename_is_safe(filename):
+    if "/" in filename or "\\" in filename or "\x00" in filename:
+        return False
+    return True
