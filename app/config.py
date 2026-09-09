@@ -21,19 +21,19 @@ class Config(metaclass=MetaFlaskEnv):
         "SCAN_FILES_DOCUMENTS_BUCKET", "development-notification-canada-ca-document-download-scan-files"
     )
 
-    ALLOWED_MIME_TYPES = [
-        "application/pdf",
-        "application/CDFV2",
-        "text/csv",
-        "text/plain",
-        "application/msword",  # .doc
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
-        "image/jpeg",
-        "image/png",
-        "application/vnd.ms-excel",  # .xls
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
-        "application/vnd.apple.numbers",  # "Numbers" app on macOS
-    ]
+    ALLOWED_MIME_TYPES = {
+        "application/pdf": [".pdf"],
+        "application/CDFV2": [".doc", ".xls"],
+        "text/csv": [".csv", ".log"],
+        "text/plain": [".txt", ".log"],
+        "application/msword": [".doc"],
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"],
+        "application/vnd.ms-excel": [".xls"],
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+        "application/vnd.apple.numbers": [],  # "Numbers" app on macOS; no supported extension yet
+    }
     EXTRA_MIME_TYPES = os.getenv("EXTRA_MIME_TYPES", "")
 
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024 + 1024
