@@ -287,6 +287,35 @@ def test_document_upload_extra_mime_type_accepts_configured_extension(app, clien
     assert response.json["document"]["mime_type"] == "application/octet-stream"
 
 
+@pytest.mark.parametrize("filename, expected_status_code", [("file.pdf", 201), ("file.custom", 201), ("file.exe", 400)])
+def test_document_upload_extra_mime_type_accepts_multiple_configured_extensions(
+    app, client, mocker, store, scan_files_store, filename, expected_status_code
+):
+    mocker.patch("app.upload.views.get_mime_type", return_value="application/octet-stream")
+    store.put.return_value = {
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
+    }
+
+    with set_config(
+        app,
+        EXTRA_MIME_TYPES=(
+            "12345678-1111-1111-1111-123456789012:application/octet-stream:.pdf,"
+            "12345678-1111-1111-1111-123456789012:application/octet-stream:.custom"
+        ),
+    ):
+        response = client.post(
+            "/services/12345678-1111-1111-1111-123456789012/documents",
+            content_type="multipart/form-data",
+            data={
+                "document": (io.BytesIO(b"custom file contents"), filename),
+                "filename": filename,
+            },
+        )
+
+    assert response.status_code == expected_status_code
+
+
 def test_document_upload_extra_mime_type_rejects_unsupported_multipart_filename(app, client, mocker):
     mocker.patch("app.upload.views.get_mime_type", return_value="application/octet-stream")
 
