@@ -39,6 +39,16 @@ def upload_document(service_id):
 
     # Unknown MIME types and unapproved MIME/extension mismatches are rejected.
     if not mime_type_is_allowed(mimetype, service_id, filename_suffix if validation_filename else None):
+        allowed_extensions = current_app.config["ALLOWED_MIME_TYPES"].get(mimetype)
+        if allowed_extensions is not None and validation_filename:
+            return (
+                jsonify(
+                    error=("Filename extension '{}' is not supported for MIME type '{}'. " "Expected extensions: {}").format(
+                        filename_suffix, mimetype, allowed_extensions
+                    )
+                ),
+                400,
+            )
         return (
             jsonify(
                 error="Unsupported document type '{}'. Supported types are: {}".format(
@@ -101,6 +111,6 @@ def mime_type_is_allowed(mimetype, service_id, file_extension=None):
 
 
 def filename_is_safe(filename):
-    if "/" in filename or "\\" in filename or "\x00" in filename:
+    if "/" in filename or "\\" in filename or not filename.isprintable():
         return False
     return True

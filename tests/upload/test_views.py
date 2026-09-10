@@ -153,7 +153,7 @@ def test_document_upload_unknown_type(client):
 
     assert response.status_code == 400
     assert response.json == {
-        "error": "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'application/CDFV2', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.apple.numbers']"  # noqa
+        "error": "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'application/CDFV2', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']"  # noqa
     }
 
 
@@ -292,6 +292,9 @@ def test_document_upload_rejects_unapproved_builtin_mime_and_extension(client, m
     )
 
     assert response.status_code == 400
+    assert response.json == {
+        "error": "Filename extension '.csv' is not supported for MIME type 'application/pdf'. Expected extensions: ['.pdf']"
+    }
 
 
 def test_document_upload_accepts_jpg_for_jpeg_mime(client, mocker, store, scan_files_store):
@@ -396,6 +399,10 @@ def test_unauthorized_document_upload(client):
     [
         ("../file.pdf", "Unsupported or unsafe filename"),
         ("C:\\file.pdf", "Unsupported or unsafe filename"),
+        ("file\r\n.pdf", "Unsupported or unsafe filename"),
+        ("file\t.pdf", "Unsupported or unsafe filename"),
+        ("file\x7f.pdf", "Unsupported or unsafe filename"),
+        ("file\u202e.pdf", "Unsupported or unsafe filename"),
     ],
 )
 def test_document_upload_rejects_unsupported_or_unsafe_filename(client, filename, expected_error):
