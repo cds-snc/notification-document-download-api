@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 
 import pytest
 
@@ -134,6 +135,23 @@ def test_document_upload_returns_size_and_mime(
     assert response.json["document"]["file_extension"] == expected_extension
 
 
+@pytest.mark.parametrize("fixture_name", ["doc_sample.doc", "xls_sample.xls"])
+def test_document_upload_rejects_legacy_office_files(client, fixture_name):
+    fixture_path = Path(__file__).parents[1] / "fixtures" / "mime" / fixture_name
+    filename = fixture_name
+
+    response = client.post(
+        "/services/00000000-0000-0000-0000-000000000000/documents",
+        content_type="multipart/form-data",
+        data={
+            "document": (io.BytesIO(fixture_path.read_bytes()), filename),
+            "filename": filename,
+        },
+    )
+
+    assert response.status_code == 400
+
+
 def test_document_upload_rejects_text_plain_without_filename(client):
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
@@ -156,7 +174,7 @@ def test_document_upload_unknown_type(client):
 
     assert response.status_code == 400
     assert response.json == {
-        "error": "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'application/CDFV2', 'text/csv', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']"  # noqa
+        "error": "Unsupported document type 'application/octet-stream'. Supported types are: ['application/pdf', 'text/csv', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']"  # noqa
     }
 
 

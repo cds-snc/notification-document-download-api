@@ -23,14 +23,11 @@ class Config(metaclass=MetaFlaskEnv):
 
     ALLOWED_MIME_TYPES = {
         "application/pdf": [".pdf"],
-        "application/CDFV2": [".doc", ".xls"],
         "text/csv": [".csv"],
         "text/plain": [".txt"],
-        "application/msword": [".doc"],
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
         "image/jpeg": [".jpg", ".jpeg"],
         "image/png": [".png"],
-        "application/vnd.ms-excel": [".xls"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
     }
     # These MIME/extension mismatches were observed in production uploads.
