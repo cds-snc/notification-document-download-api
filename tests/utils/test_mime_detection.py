@@ -12,7 +12,6 @@ REAL_MIME_SAMPLES = [
     (("application/msword", "application/x-ole-storage"), "doc_sample.doc"),
     ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx_sample.docx"),
     ("image/jpeg", "jpg_sample.jpg"),
-    (("application/vnd.apple.numbers", "application/zip"), "numbers_sample.numbers"),
     ("application/pdf", "pdf_sample.pdf"),
     ("image/png", "png_sample.png"),
     (("text/csv", "text/plain"), "csv_sample.csv"),

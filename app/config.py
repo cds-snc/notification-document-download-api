@@ -32,7 +32,6 @@ class Config(metaclass=MetaFlaskEnv):
         "image/png": [".png"],
         "application/vnd.ms-excel": [".xls"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
-        "application/vnd.apple.numbers": [],  # "Numbers" app on macOS; no supported extension yet
     }
     # These MIME/extension mismatches were observed in production uploads.
     # Keep them separate from the normal mappings so unexpected mismatches remain distinguishable.
