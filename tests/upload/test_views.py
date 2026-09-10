@@ -138,10 +138,13 @@ def test_document_upload_rejects_text_plain_without_filename(client):
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
         content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"Canada"), "fake")},
+        data={"document": (io.BytesIO(b"Canada"), "")},
     )
 
     assert response.status_code == 400
+    assert response.json == {
+        "error": "A filename with a supported extension is required for MIME type 'text/plain'. Expected extensions: ['.txt']"
+    }
 
 
 def test_document_upload_unknown_type(client):
