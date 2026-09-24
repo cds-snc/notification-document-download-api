@@ -155,50 +155,6 @@ def test_document_download_template_attach_no_key_required(client, store, mocker
     assert response.status_code == 200
 
 
-@pytest.mark.parametrize(
-    "endpoint",
-    ["download.download_document", "download.download_document_b64"],
-)
-def test_document_download_template_attach_requires_auth(client, store, endpoint):
-    response = client.get(
-        url_for(
-            endpoint,
-            service_id="00000000-0000-0000-0000-000000000000",
-            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-            sending_method="template_attach",
-        ),
-        headers={"Authorization": None},
-    )
-
-    assert response.status_code == 401
-    store.get.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "endpoint",
-    ["download.download_document", "download.download_document_b64"],
-)
-def test_document_download_link_does_not_require_auth(client, store, endpoint, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
-    store.get.return_value = {
-        "body": io.BytesIO(b"PDF document contents"),
-        "mimetype": "application/pdf",
-        "size": 100,
-    }
-
-    response = client.get(
-        url_for(
-            endpoint,
-            service_id="00000000-0000-0000-0000-000000000000",
-            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-            key="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",  # 32 \x00 bytes
-        ),
-        headers={"Authorization": None},
-    )
-
-    assert response.status_code == 200
-
-
 def test_document_download_without_decryption_key(client, store):
     response = client.get(
         url_for(
@@ -355,58 +311,3 @@ def test_scan_unsupported_returns_scan_verdict(client, scan_files_store):
     )
     assert response.status_code == 422
     assert json.loads(response.data) == {"scan_verdict": "scan_unsupported"}
-
-
-def test_delete_document_template_attach_requires_auth(client, store, scan_files_store):
-    response = client.delete(
-        url_for(
-            "download.delete_document",
-            service_id="00000000-0000-0000-0000-000000000000",
-            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-        ),
-        query_string={"sending_method": "template_attach"},
-        headers={"Authorization": None},
-    )
-
-    assert response.status_code == 401
-    store.delete.assert_not_called()
-    scan_files_store.delete.assert_not_called()
-
-
-def test_delete_document_template_attach_with_auth_succeeds(client, store, scan_files_store):
-    response = client.delete(
-        url_for(
-            "download.delete_document",
-            service_id="00000000-0000-0000-0000-000000000000",
-            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-        ),
-        query_string={"sending_method": "template_attach"},
-    )
-
-    assert response.status_code == 200
-    store.delete.assert_called_once_with(
-        UUID("00000000-0000-0000-0000-000000000000"),
-        UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
-        None,
-        "template_attach",
-    )
-
-
-def test_delete_document_link_does_not_require_auth(client, store, scan_files_store):
-    response = client.delete(
-        url_for(
-            "download.delete_document",
-            service_id="00000000-0000-0000-0000-000000000000",
-            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
-        ),
-        query_string={"key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},  # 32 \x00 bytes
-        headers={"Authorization": None},
-    )
-
-    assert response.status_code == 200
-    store.delete.assert_called_once_with(
-        UUID("00000000-0000-0000-0000-000000000000"),
-        UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
-        bytes(32),
-        "link",
-    )

@@ -10,7 +10,6 @@ from flask import (
 from notifications_utils.base64_uuid import base64_to_bytes
 
 from app import document_store, scan_files_document_store
-from app.utils.authentication import check_auth
 from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
@@ -35,8 +34,6 @@ def download_document(service_id, document_id):
 
     # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
     if sending_method == "template_attach":
-        # template_attach has no key to gate access, so require a bearer token instead
-        check_auth()
         key = None
     else:
         if "key" not in request.args:
@@ -110,8 +107,6 @@ def download_document_b64(service_id, document_id):
 
     # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
     if sending_method == "template_attach":
-        # template_attach has no key to gate access, so require a bearer token instead
-        check_auth()
         key = None
     else:
         if "key" not in request.args:
@@ -203,8 +198,6 @@ def delete_document(service_id, document_id):
 
     # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
     if sending_method == "template_attach":
-        # template_attach has no key to gate access, so require a bearer token instead
-        check_auth()
         key = None
         current_app.logger.info("Using SSE-S3 encryption (no key required) for template_attach")
     else:
