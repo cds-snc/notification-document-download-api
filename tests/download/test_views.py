@@ -387,26 +387,46 @@ def test_delete_document_template_attach_with_auth_succeeds(client, store, scan_
     store.delete.assert_called_once_with(
         UUID("00000000-0000-0000-0000-000000000000"),
         UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
-        None,
         "template_attach",
     )
 
 
-def test_delete_document_link_does_not_require_auth(client, store, scan_files_store):
+@pytest.mark.parametrize(
+    "query_string",
+    [
+        {},
+        {"sending_method": "link", "key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
+        {"sending_method": "attach", "key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
+    ],
+)
+def test_delete_document_non_template_attach_requires_auth(client, store, scan_files_store, query_string):
     response = client.delete(
         url_for(
             "download.delete_document",
             service_id="00000000-0000-0000-0000-000000000000",
             document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
         ),
-        query_string={"key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},  # 32 \x00 bytes
+        query_string=query_string,
         headers={"Authorization": None},
+    )
+
+    assert response.status_code == 401
+    store.delete.assert_not_called()
+    scan_files_store.delete.assert_not_called()
+
+
+def test_delete_document_link_with_auth_succeeds(client, store, scan_files_store):
+    response = client.delete(
+        url_for(
+            "download.delete_document",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        ),
     )
 
     assert response.status_code == 200
     store.delete.assert_called_once_with(
         UUID("00000000-0000-0000-0000-000000000000"),
         UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
-        bytes(32),
         "link",
     )

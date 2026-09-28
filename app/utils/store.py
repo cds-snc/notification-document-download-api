@@ -145,26 +145,17 @@ class DocumentStore:
             # link mode or None
             return f"{service_id}/{document_id}"
 
-    def delete(self, service_id, document_id, decryption_key, sending_method):
+    def delete(self, service_id, document_id, sending_method):
         """
         Delete a document from S3.
-        decryption_key should be raw bytes (not needed for template_attach).
         """
         try:
             current_app.logger.info(f"Deleting document: {document_id} from service {service_id}")
-            # SSE-S3 for template_attach, SSE-C for all others
-            if sending_method == "template_attach":
-                self.s3.delete_object(
-                    Bucket=self.bucket,
-                    Key=self.get_document_key(service_id, document_id, sending_method),
-                )
-            else:
-                self.s3.delete_object(
-                    Bucket=self.bucket,
-                    Key=self.get_document_key(service_id, document_id, sending_method),
-                    SSECustomerKey=decryption_key,
-                    SSECustomerAlgorithm="AES256",
-                )
+            # DeleteObject doesn't accept SSE-C parameters, so the same call works for every encryption type
+            self.s3.delete_object(
+                Bucket=self.bucket,
+                Key=self.get_document_key(service_id, document_id, sending_method),
+            )
         except BotoClientError as e:
             current_app.logger.error("Failed to delete document: {}".format(e))
             raise DocumentStoreError(e.response["Error"])
