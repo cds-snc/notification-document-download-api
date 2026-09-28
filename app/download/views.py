@@ -47,7 +47,7 @@ def download_document(service_id, document_id):
             return jsonify(error="Invalid decryption key"), 400
 
         try:
-            check_scan_verdict(service_id, document_id, sending_method)
+            scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
         except MaliciousContentError as e:
             current_app.logger.info(
                 "Malicious content detected, refused to download document: {}".format(e),
@@ -122,7 +122,7 @@ def download_document_b64(service_id, document_id):
             abort(404)
 
     try:
-        check_scan_verdict(service_id, document_id, sending_method)
+        scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except MaliciousContentError as e:
         current_app.logger.info(
             "Malicious content detected, refused to download document: {}".format(e),
@@ -248,8 +248,9 @@ def delete_document(service_id, document_id):
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"])
-def check_scan_verdict(service_id, document_id, sending_method=None):
-    sending_method = request.form.get("sending_method", sending_method)
+def check_scan_verdict(service_id, document_id):
+    check_auth()
+    sending_method = request.form.get("sending_method")
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except MaliciousContentError as e:
