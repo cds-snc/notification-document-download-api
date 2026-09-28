@@ -28,8 +28,7 @@ def scan_files_store(mocker):
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download(client, store, endpoint, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download(client, store, scan_files_store, endpoint):
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -68,8 +67,7 @@ def test_document_download(client, store, endpoint, mocker):
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download_with_filename(client, store, endpoint, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download_with_filename(client, store, scan_files_store, endpoint):
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -107,8 +105,7 @@ def test_document_download_with_filename(client, store, endpoint, mocker):
     )
 
 
-def test_document_download_template_attach_skips_scan_verdict(client, store, mocker):
-    mock_check = mocker.patch("app.download.views.check_scan_verdict")
+def test_document_download_template_attach_skips_scan_verdict(client, store, scan_files_store):
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -126,7 +123,7 @@ def test_document_download_template_attach_skips_scan_verdict(client, store, moc
 
     assert response.status_code == 200
     assert response.get_data() == b"PDF document contents"
-    mock_check.assert_not_called()
+    scan_files_store.check_scan_verdict.assert_not_called()
     store.get.assert_called_once_with(
         UUID("00000000-0000-0000-0000-000000000000"),
         UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
@@ -135,8 +132,7 @@ def test_document_download_template_attach_skips_scan_verdict(client, store, moc
     )
 
 
-def test_document_download_template_attach_no_key_required(client, store, mocker):
-    mocker.patch("app.download.views.check_scan_verdict")
+def test_document_download_template_attach_no_key_required(client, store, scan_files_store):
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -178,8 +174,8 @@ def test_document_download_template_attach_requires_auth(client, store, endpoint
     "endpoint",
     ["download.download_document", "download.download_document_b64"],
 )
-def test_document_download_link_does_not_require_auth(client, store, endpoint, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download_link_does_not_require_auth(client, store, scan_files_store, endpoint):
+    scan_files_store.check_scan_verdict.return_value = "clean"
     store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
         "mimetype": "application/pdf",
@@ -197,6 +193,7 @@ def test_document_download_link_does_not_require_auth(client, store, endpoint, m
     )
 
     assert response.status_code == 200
+    scan_files_store.check_scan_verdict.assert_called_once()
 
 
 def test_document_download_without_decryption_key(client, store):
@@ -226,8 +223,7 @@ def test_document_download_with_invalid_decryption_key(client):
     assert response.json == {"error": "Invalid decryption key"}
 
 
-def test_document_download_document_store_error(client, store, mocker):
-    mocker.patch("app.download.views.check_scan_verdict", return_value=None)
+def test_document_download_document_store_error(client, store, scan_files_store):
     store.get.side_effect = DocumentStoreError("something went wrong")
     response = client.get(
         url_for(
@@ -260,9 +256,9 @@ def test_document_download_document_store_error(client, store, mocker):
     ],
 )
 def test_document_download_check_scan_verdict_errors(
-    client, store, scan_files_store, mocker, endpoint, response_code, error, scan_return
+    client, store, scan_files_store, endpoint, response_code, error, scan_return
 ):
-    mocker.patch("app.download.views.check_scan_verdict", side_effect=error)
+    scan_files_store.check_scan_verdict.side_effect = error
     scan_files_store.get_object_age_seconds.return_value = {"age_seconds": scan_return}
     store.get.return_value = store.get.return_value = {
         "body": io.BytesIO(b"PDF document contents"),
@@ -278,6 +274,7 @@ def test_document_download_check_scan_verdict_errors(
         )
     )
     assert response.status_code == response_code
+    assert store.get.called == (response_code == 200)
 
 
 @pytest.mark.parametrize(
@@ -355,6 +352,31 @@ def test_scan_unsupported_returns_scan_verdict(client, scan_files_store):
     )
     assert response.status_code == 422
     assert json.loads(response.data) == {"scan_verdict": "scan_unsupported"}
+
+
+@pytest.mark.parametrize(
+    "auth_header, response_code",
+    [
+        [None, 401],
+        ["Bearer not-a-valid-token", 403],
+    ],
+)
+@pytest.mark.parametrize("sending_method", ["link", "attach", "template_attach"])
+def test_scan_verdict_requires_auth(client, scan_files_store, auth_header, response_code, sending_method):
+    scan_files_store.check_scan_verdict.return_value = "clean"
+    response = client.post(
+        url_for(
+            "download.check_scan_verdict",
+            service_id="00000000-0000-0000-0000-000000000000",
+            document_id="ffffffff-ffff-ffff-ffff-ffffffffffff",
+        ),
+        data={"sending_method": sending_method},
+        headers={"Authorization": auth_header},
+    )
+
+    assert response.status_code == response_code
+    scan_files_store.check_scan_verdict.assert_not_called()
+    scan_files_store.get_object_age_seconds.assert_not_called()
 
 
 def test_delete_document_template_attach_requires_auth(client, store, scan_files_store):
