@@ -26,7 +26,7 @@ class Config(metaclass=MetaFlaskEnv):
         "text/csv": [".csv"],
         "text/plain": [".txt"],
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
-        "image/jpeg": [".jpg", ".jpeg"],
+        "image/jpeg": [".jpg", ".jpeg", ".jfif"],
         "image/png": [".png"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
     }

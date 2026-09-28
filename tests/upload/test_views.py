@@ -354,7 +354,8 @@ def test_document_upload_rejects_unapproved_builtin_mime_and_extension(client, m
     )
 
 
-def test_document_upload_accepts_jpg_for_jpeg_mime(client, mocker, store, scan_files_store):
+@pytest.mark.parametrize("extension", ["jpg", "jpeg", "jfif"])
+def test_document_upload_accepts_jpeg_extensions_for_jpeg_mime(client, mocker, store, scan_files_store, extension):
     mocker.patch("app.upload.views.get_mime_type", return_value="image/jpeg")
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
@@ -364,7 +365,7 @@ def test_document_upload_accepts_jpg_for_jpeg_mime(client, mocker, store, scan_f
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
         content_type="multipart/form-data",
-        data={"document": (io.BytesIO(b"jpeg contents"), "file.jpg")},
+        data={"document": (io.BytesIO(b"jpeg contents"), f"file.{extension}")},
     )
 
     assert response.status_code == 201
