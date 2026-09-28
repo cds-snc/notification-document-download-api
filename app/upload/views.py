@@ -25,6 +25,11 @@ def upload_document(service_id):
         filename_suffix = pathlib.Path(validation_filename.lower()).suffix
         # Reject path-like names before using the filename for extension checks.
         if not filename_is_safe(validation_filename):
+            current_app.logger.warning(
+                "Rejecting upload with unsafe filename: %s",
+                validation_filename,
+                extra={"service_id": str(service_id)},
+            )
             return jsonify(error="Unsupported or unsafe filename"), 400
         if filename:
             file_extension = filename_suffix.lstrip(".")
@@ -41,6 +46,11 @@ def upload_document(service_id):
     if not mime_type_is_allowed(mimetype, service_id, filename_suffix if validation_filename else None):
         allowed_extensions = current_app.config["ALLOWED_MIME_TYPES"].get(mimetype)
         if allowed_extensions is not None and not validation_filename:
+            current_app.logger.warning(
+                "Rejecting upload without a supported filename extension for MIME type %s",
+                mimetype,
+                extra={"service_id": str(service_id)},
+            )
             return (
                 jsonify(
                     error=(
@@ -50,6 +60,12 @@ def upload_document(service_id):
                 400,
             )
         if allowed_extensions is not None:
+            current_app.logger.warning(
+                "Rejecting upload with unsupported filename extension %s for MIME type %s",
+                filename_suffix,
+                mimetype,
+                extra={"service_id": str(service_id)},
+            )
             return (
                 jsonify(
                     error=("Filename extension '{}' is not supported for MIME type '{}'. " "Expected extensions: {}").format(
@@ -58,6 +74,11 @@ def upload_document(service_id):
                 ),
                 400,
             )
+        current_app.logger.warning(
+            "Rejecting upload with unsupported MIME type %s",
+            mimetype,
+            extra={"service_id": str(service_id)},
+        )
         return (
             jsonify(
                 error="Unsupported document type '{}'. Supported types are: {}".format(

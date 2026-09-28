@@ -334,6 +334,7 @@ def test_document_upload_extra_mime_type_rejects_unsupported_multipart_filename(
 
 def test_document_upload_rejects_unapproved_builtin_mime_and_extension(client, mocker):
     mocker.patch("app.upload.views.get_mime_type", return_value="application/pdf")
+    warning = mocker.patch("app.upload.views.current_app.logger.warning")
 
     response = client.post(
         "/services/12345678-1111-1111-1111-123456789012/documents",
@@ -345,6 +346,12 @@ def test_document_upload_rejects_unapproved_builtin_mime_and_extension(client, m
     assert response.json == {
         "error": "Filename extension '.csv' is not supported for MIME type 'application/pdf'. Expected extensions: ['.pdf']"
     }
+    warning.assert_called_once_with(
+        "Rejecting upload with unsupported filename extension %s for MIME type %s",
+        ".csv",
+        "application/pdf",
+        extra={"service_id": "12345678-1111-1111-1111-123456789012"},
+    )
 
 
 def test_document_upload_accepts_jpg_for_jpeg_mime(client, mocker, store, scan_files_store):
