@@ -43,7 +43,7 @@ def upload_document(service_id):
         mimetype = "text/csv"
 
     # Unknown MIME types and unapproved MIME/extension mismatches are rejected.
-    if not mime_type_is_allowed(mimetype, service_id, filename_suffix if validation_filename else None):
+    if not mime_type_is_allowed(mimetype, service_id, filename_suffix if validation_filename else None, validation_filename):
         allowed_extensions = current_app.config["ALLOWED_MIME_TYPES"].get(mimetype)
         if allowed_extensions is not None and not validation_filename:
             current_app.logger.warning(
@@ -61,9 +61,10 @@ def upload_document(service_id):
             )
         if allowed_extensions is not None:
             current_app.logger.warning(
-                "Rejecting upload with unsupported filename extension %s for MIME type %s",
+                "Rejecting upload with unsupported filename extension %s for MIME type %s, filename: %s",
                 filename_suffix,
                 mimetype,
+                validation_filename,
                 extra={"service_id": str(service_id)},
             )
             return (
@@ -75,8 +76,9 @@ def upload_document(service_id):
                 400,
             )
         current_app.logger.warning(
-            "Rejecting upload with unsupported MIME type %s",
+            "Rejecting upload with unsupported MIME type %s, filename: %s",
             mimetype,
+            validation_filename,
             extra={"service_id": str(service_id)},
         )
         return (
@@ -123,14 +125,20 @@ def upload_document(service_id):
     )
 
 
-def mime_type_is_allowed(mimetype, service_id, file_extension=None):
+def mime_type_is_allowed(mimetype, service_id, file_extension=None, filename=None):
     allowed_extensions = current_app.config["ALLOWED_MIME_TYPES"].get(mimetype)
     if allowed_extensions is not None and file_extension in allowed_extensions:
         return True
 
     compatibility_extensions = current_app.config["MIME_EXTENSION_COMPATIBILITY"].get(mimetype, [])
     if file_extension in compatibility_extensions:
-        current_app.logger.warning("Allowing known MIME type mismatch: %s with filename extension %s", mimetype, file_extension)
+        current_app.logger.warning(
+            "Allowing known MIME type mismatch: %s with filename extension %s, filename: %s",
+            mimetype,
+            file_extension,
+            filename,
+            extra={"service_id": str(service_id)},
+        )
         return True
 
     return any(

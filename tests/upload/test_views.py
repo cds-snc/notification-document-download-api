@@ -347,9 +347,10 @@ def test_document_upload_rejects_unapproved_builtin_mime_and_extension(client, m
         "error": "Filename extension '.csv' is not supported for MIME type 'application/pdf'. Expected extensions: ['.pdf']"
     }
     warning.assert_called_once_with(
-        "Rejecting upload with unsupported filename extension %s for MIME type %s",
+        "Rejecting upload with unsupported filename extension %s for MIME type %s, filename: %s",
         ".csv",
         "application/pdf",
+        "file.csv",
         extra={"service_id": "12345678-1111-1111-1111-123456789012"},
     )
 
@@ -395,7 +396,13 @@ def test_document_upload_accepts_configured_mime_compatibility(client, mocker, s
     )
 
     assert response.status_code == 201
-    warning.assert_called_once_with("Allowing known MIME type mismatch: %s with filename extension %s", mimetype, filename[4:])
+    warning.assert_called_once_with(
+        "Allowing known MIME type mismatch: %s with filename extension %s, filename: %s",
+        mimetype,
+        filename[4:],
+        filename,
+        extra={"service_id": "12345678-1111-1111-1111-123456789012"},
+    )
 
 
 def test_document_file_size_just_right(client, store, scan_files_store):
