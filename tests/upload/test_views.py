@@ -455,8 +455,6 @@ def test_unauthorized_document_upload(client):
 @pytest.mark.parametrize(
     "filename, expected_error",
     [
-        ("../file.pdf", "Unsupported or unsafe filename"),
-        ("C:\\file.pdf", "Unsupported or unsafe filename"),
         ("file\r\n.pdf", "Unsupported or unsafe filename"),
         ("file\t.pdf", "Unsupported or unsafe filename"),
         ("file\x7f.pdf", "Unsupported or unsafe filename"),
@@ -474,7 +472,8 @@ def test_document_upload_rejects_unsupported_or_unsafe_filename(client, filename
     assert response.json["error"].startswith(expected_error)
 
 
-def test_document_upload_accepts_allowlisted_filename(client, store, scan_files_store):
+@pytest.mark.parametrize("filename", ["FILE.PDF", "invoice 01/02/2026.pdf", "C:\\docs\\file.pdf", "../file.pdf"])
+def test_document_upload_accepts_allowlisted_filename(client, store, scan_files_store, filename):
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
@@ -485,11 +484,12 @@ def test_document_upload_accepts_allowlisted_filename(client, store, scan_files_
         content_type="multipart/form-data",
         data={
             "document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf"),
-            "filename": "FILE.PDF",
+            "filename": filename,
         },
     )
 
     assert response.status_code == 201
+    assert response.json["document"]["filename"] == filename
     assert response.json["document"]["file_extension"] == "pdf"
 
 

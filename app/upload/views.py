@@ -23,7 +23,7 @@ def upload_document(service_id):
     validation_filename = filename or request.files["document"].filename
     if validation_filename:
         filename_suffix = pathlib.Path(validation_filename.lower()).suffix
-        # Reject path-like names before using the filename for extension checks.
+        # Reject non-printable names before using the filename for extension checks.
         if not filename_is_safe(validation_filename):
             current_app.logger.warning(
                 "Rejecting upload with unsafe filename: %s",
@@ -141,6 +141,4 @@ def mime_type_is_allowed(mimetype, service_id, file_extension=None):
 
 
 def filename_is_safe(filename):
-    if "/" in filename or "\\" in filename or not filename.isprintable():
-        return False
-    return True
+    return filename.isprintable()
