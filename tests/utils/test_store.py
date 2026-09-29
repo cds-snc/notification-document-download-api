@@ -142,6 +142,20 @@ def test_get_document_with_boto_error(store):
         store.get("service-id", "document-id", "0f0f0f", sending_method="link")
 
 
+@pytest.mark.parametrize(
+    "sending_method, expected_key",
+    [
+        ("link", "api_link/service-id/document-id"),
+        ("attach", "api_attachments/service-id/document-id"),
+        ("template_attach", "template_attachments/service-id/document-id"),
+    ],
+)
+def test_delete_document_does_not_pass_sse_c_params(store, sending_method, expected_key):
+    store.delete("service-id", "document-id", sending_method)
+
+    store.s3.delete_object.assert_called_once_with(Bucket="test-bucket", Key=expected_key)
+
+
 def test_get_document_with_scan_in_progress(scan_files_store):
     scan_files_store.s3.get_object_tagging = mock.Mock(return_value={"TagSet": []})
     with pytest.raises(ScanInProgressError):
