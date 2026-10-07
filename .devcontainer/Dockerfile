@@ -3,7 +3,8 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:1-3.12
 ENV POETRY_VERSION="1.7.1"
 ENV POETRY_VENV_PATH="/home/vscode/.venv/workspace"
 
-RUN apt-get update \
+RUN rm -f /etc/apt/sources.list.d/yarn.list \
+    && apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
     && apt-get -y install \
         curl \
@@ -39,6 +40,6 @@ RUN pip install --upgrade pip
 
 COPY .devcontainer/scripts/notify-dev-entrypoint.sh /usr/local/bin/
 
-ENV SHELL /bin/zsh
+ENV SHELL=/bin/zsh
 
 EXPOSE 7000
