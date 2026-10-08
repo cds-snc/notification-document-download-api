@@ -2,6 +2,7 @@ import io
 from pathlib import Path
 
 import pytest
+from app.upload import views as upload_views
 
 from tests.conftest import set_config
 
@@ -533,7 +534,8 @@ def test_document_upload_normalizes_unicode_spaces_and_zero_width_characters(
     assert response.json["document"]["file_extension"] == "pdf"
 
 
-def test_document_upload_normalizes_multipart_filename_without_api_filename(client, store, scan_files_store):
+def test_document_upload_normalizes_multipart_filename_without_api_filename(client, mocker, store, scan_files_store):
+    get_mime_type = mocker.spy(upload_views, "get_mime_type")
     store.put.return_value = {
         "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
         "encryption_key": bytes(32),
@@ -547,6 +549,7 @@ def test_document_upload_normalizes_multipart_filename_without_api_filename(clie
 
     assert response.status_code == 201
     assert response.json["document"]["filename"] is None
+    assert get_mime_type.call_args.args[1] == "Screenshot 7.43.13 PM.pdf"
 
 
 @pytest.mark.parametrize("filename", ["FILE.PDF", "invoice 01/02/2026.pdf", "C:\\docs\\file.pdf", "../file.pdf"])
