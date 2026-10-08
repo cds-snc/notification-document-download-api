@@ -1,4 +1,5 @@
 import pathlib
+import unicodedata
 
 from flask import Blueprint, current_app, jsonify, request
 
@@ -10,6 +11,16 @@ from app.utils.urls import get_api_download_url, get_direct_file_url
 upload_blueprint = Blueprint("upload", __name__, url_prefix="")
 upload_blueprint.before_request(check_auth)
 
+ZERO_WIDTH_CHARACTERS = str.maketrans("", "", "\u200b\u2060\ufeff")
+
+
+def normalize_filename(filename):
+    # macOS screenshot names contain U+202F, and copy-pasted names often carry zero-width characters.
+    if not filename:
+        return None
+    filename = filename.translate(ZERO_WIDTH_CHARACTERS)
+    return "".join(" " if unicodedata.category(char) == "Zs" else char for char in filename) or None
+
 
 @upload_blueprint.route("/services/<uuid:service_id>/documents", methods=["POST"])
 def upload_document(service_id):
@@ -18,9 +29,9 @@ def upload_document(service_id):
 
     # The API filename controls response/download metadata; the multipart filename
     # is a validation fallback for clients that omit the API field.
-    filename = request.form.get("filename")
+    filename = normalize_filename(request.form.get("filename"))
     file_extension = None
-    validation_filename = filename or request.files["document"].filename
+    validation_filename = filename or normalize_filename(request.files["document"].filename)
     if validation_filename:
         filename_suffix = pathlib.Path(validation_filename.lower()).suffix
         # Reject non-printable names before using the filename for extension checks.
