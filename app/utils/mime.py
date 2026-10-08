@@ -3,6 +3,7 @@ import posixpath
 import xml.etree.ElementTree as ET
 import zipfile
 import zlib
+from xml.parsers import expat
 
 import magic
 
@@ -42,6 +43,17 @@ def get_mime_type(document_stream, filename=None):
     return mime_type
 
 
+def parse_package_xml(data):
+    # OPC forbids DTDs; rejecting them up front prevents entity-expansion attacks.
+    def reject_dtd(*args):
+        raise ValueError("DTDs are not allowed in OOXML package XML")
+
+    checker = expat.ParserCreate()
+    checker.StartDoctypeDeclHandler = reject_dtd
+    checker.Parse(data, True)
+    return ET.fromstring(data)
+
+
 def get_ooxml_main_content_type(document_stream):
     """Return the content type of the main part of an OOXML package, or None if it isn't a valid package."""
     try:
@@ -53,7 +65,7 @@ def get_ooxml_main_content_type(document_stream):
                 info = members.get(part_name.lower())
                 if info is None or info.file_size > MAX_PACKAGE_XML_SIZE:
                     return None
-                return ET.fromstring(package.read(info))
+                return parse_package_xml(package.read(info))
 
             relationships = read_xml("_rels/.rels")
             content_types = read_xml("[Content_Types].xml")
@@ -73,6 +85,7 @@ def get_ooxml_main_content_type(document_stream):
                 return None
     except (
         ET.ParseError,
+        expat.ExpatError,
         KeyError,
         OSError,
         RuntimeError,
