@@ -3,8 +3,8 @@ import pathlib
 from flask import Blueprint, current_app, jsonify, request
 
 from app import document_store, scan_files_document_store
-from app.utils import get_mime_type
 from app.utils.authentication import check_auth
+from app.utils.mime import get_mime_type
 from app.utils.urls import get_api_download_url, get_direct_file_url
 
 upload_blueprint = Blueprint("upload", __name__, url_prefix="")
@@ -36,7 +36,7 @@ def upload_document(service_id):
 
     # Detect the content from the upload stream, then apply compatibility fixes
     # for formats that libmagic commonly classifies too generally.
-    mimetype = get_mime_type(request.files["document"])
+    mimetype = get_mime_type(request.files["document"], validation_filename)
     # Our MIME type auto-detection resolves CSV content as text/plain,
     # so we fix that if possible before checking the MIME allowlist.
     if validation_filename and validation_filename.lower().endswith(".csv") and mimetype == "text/plain":

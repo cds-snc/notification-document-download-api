@@ -373,6 +373,31 @@ def test_document_upload_accepts_jpeg_extensions_for_jpeg_mime(client, mocker, s
 
 
 @pytest.mark.parametrize(
+    "fixture_name, filename, expected_mime",
+    [
+        ("docx_zip_header_sample.docx", "resume.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        ("xlsx_zip_header_sample.xlsx", "budget.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    ],
+)
+def test_document_upload_accepts_ooxml_detected_as_zip(client, store, scan_files_store, fixture_name, filename, expected_mime):
+    store.put.return_value = {
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
+    }
+    content = (Path(__file__).parents[1] / "fixtures" / "mime" / fixture_name).read_bytes()
+
+    response = client.post(
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(content), filename)},
+    )
+
+    assert response.status_code == 201
+    assert response.json["document"]["mime_type"] == expected_mime
+    assert store.put.call_args.kwargs["mimetype"] == expected_mime
+
+
+@pytest.mark.parametrize(
     "mimetype, filename",
     [
         ("text/plain", "file.json"),
