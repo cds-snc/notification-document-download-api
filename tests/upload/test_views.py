@@ -2,6 +2,7 @@ import io
 from pathlib import Path
 
 import pytest
+from app.upload import views as upload_views
 
 from tests.conftest import set_config
 
@@ -373,6 +374,31 @@ def test_document_upload_accepts_jpeg_extensions_for_jpeg_mime(client, mocker, s
 
 
 @pytest.mark.parametrize(
+    "fixture_name, filename, expected_mime",
+    [
+        ("docx_zip_header_sample.docx", "resume.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        ("xlsx_zip_header_sample.xlsx", "budget.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    ],
+)
+def test_document_upload_accepts_ooxml_detected_as_zip(client, store, scan_files_store, fixture_name, filename, expected_mime):
+    store.put.return_value = {
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
+    }
+    content = (Path(__file__).parents[1] / "fixtures" / "mime" / fixture_name).read_bytes()
+
+    response = client.post(
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(content), filename)},
+    )
+
+    assert response.status_code == 201
+    assert response.json["document"]["mime_type"] == expected_mime
+    assert store.put.call_args.kwargs["mimetype"] == expected_mime
+
+
+@pytest.mark.parametrize(
     "mimetype, filename",
     [
         ("text/plain", "file.json"),
@@ -466,6 +492,7 @@ def test_unauthorized_document_upload(client):
         ("file\t.pdf", "Unsupported or unsafe filename"),
         ("file\x7f.pdf", "Unsupported or unsafe filename"),
         ("file\u202e.pdf", "Unsupported or unsafe filename"),
+        ("file\u2028.pdf", "Unsupported or unsafe filename"),
     ],
 )
 def test_document_upload_rejects_unsupported_or_unsafe_filename(client, filename, expected_error):
@@ -477,6 +504,52 @@ def test_document_upload_rejects_unsupported_or_unsafe_filename(client, filename
 
     assert response.status_code == 400
     assert response.json["error"].startswith(expected_error)
+
+
+@pytest.mark.parametrize(
+    "filename, expected_filename",
+    [
+        ("Screenshot 2026-10-01 at 7.43.13\u202fPM.pdf", "Screenshot 2026-10-01 at 7.43.13 PM.pdf"),
+        ("Shared hallway where package was left\u2060.pdf", "Shared hallway where package was left.pdf"),
+        ("\ufeffreport\u200b.pdf", "report.pdf"),
+        ("file\u00a0name.pdf", "file name.pdf"),
+    ],
+)
+def test_document_upload_normalizes_unicode_spaces_and_zero_width_characters(
+    client, store, scan_files_store, filename, expected_filename
+):
+    store.put.return_value = {
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
+    }
+
+    response = client.post(
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "file.pdf"), "filename": filename},
+    )
+
+    assert response.status_code == 201
+    assert response.json["document"]["filename"] == expected_filename
+    assert response.json["document"]["file_extension"] == "pdf"
+
+
+def test_document_upload_normalizes_multipart_filename_without_api_filename(client, mocker, store, scan_files_store):
+    get_mime_type = mocker.spy(upload_views, "get_mime_type")
+    store.put.return_value = {
+        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+        "encryption_key": bytes(32),
+    }
+
+    response = client.post(
+        "/services/12345678-1111-1111-1111-123456789012/documents",
+        content_type="multipart/form-data",
+        data={"document": (io.BytesIO(b"%PDF-1.4 file contents"), "Screenshot 7.43.13\u202fPM.pdf")},
+    )
+
+    assert response.status_code == 201
+    assert response.json["document"]["filename"] is None
+    assert get_mime_type.call_args.args[1] == "Screenshot 7.43.13 PM.pdf"
 
 
 @pytest.mark.parametrize("filename", ["FILE.PDF", "invoice 01/02/2026.pdf", "C:\\docs\\file.pdf", "../file.pdf"])
