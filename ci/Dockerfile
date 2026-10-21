@@ -6,6 +6,14 @@ ENV POETRY_VIRTUALENVS_CREATE false
 
 RUN apk add --no-cache build-base git gcc make libffi-dev openssl-dev libmagic rust cargo && rm -rf /var/cache/apk/*
 
+# -- Install CA certificates and update them to disable emSign ECC Root CA - G3 --
+RUN apk add --no-cache ca-certificates && \
+    sed -i \
+      -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt|!&|' \
+      -e 's|^mozilla/Comodo_AAA_Services_root.crt|!&|' \
+      /etc/ca-certificates.conf && \
+    update-ca-certificates --fresh
+
 RUN pip3 install poetry==${POETRY_VERSION} \
   && poetry --version
 
