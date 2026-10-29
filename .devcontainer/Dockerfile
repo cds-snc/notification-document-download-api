@@ -38,15 +38,10 @@ RUN rm -f /etc/apt/sources.list.d/yarn.list \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-# -- Install CA certificates and update them to disable emSign ECC Root CA - G3 --
+# ca-certificates >= 20250419~deb12u2 (bookworm-security) removes emSign ECC Root CA - G3 and Comodo AAA Services root
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates && \
-    rm -rf /var/lib/apt/lists/* && \
-    sed -i \
-      -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt|!&|' \
-      -e 's|^mozilla/Comodo_AAA_Services_root.crt|!&|' \
-      /etc/ca-certificates.conf && \
-    update-ca-certificates --fresh
+    rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
 RUN pip install --upgrade pip

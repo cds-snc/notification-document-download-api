@@ -15,14 +15,14 @@ Date: 2026-10-29
 | File | Before | After |
 |---|---|---|
 | `ci/Dockerfile` | `python:3.12-alpine3.20@sha256:5049c050…83bf98` | `python:3.12-alpine3.24@sha256:5789aa194f757888f41fa3d48e14b6feaa1b57c0af0b56fcb1372d6474d3bff0`; removed the now-no-op `sed` distrust of emSign ECC G3 / Comodo AAA (neither cert is in `ca-certificates-20261020`) |
-| `.devcontainer/Dockerfile` | `mcr.microsoft.com/vscode/devcontainers/python:1-3.12` (floating) | `mcr.microsoft.com/vscode/devcontainers/python:1-3.12@sha256:7876580dc67fd460fd962f004cbeb480027e9bbc0657096f1087db11f9eaff39` + `apt-get install --only-upgrade libbrotli1 libbrotli-dev` + drop expired Yarn apt source |
+| `.devcontainer/Dockerfile` | `mcr.microsoft.com/vscode/devcontainers/python:1-3.12` (floating) | `mcr.microsoft.com/vscode/devcontainers/python:1-3.12@sha256:7876580dc67fd460fd962f004cbeb480027e9bbc0657096f1087db11f9eaff39` + `apt-get install --only-upgrade libbrotli1 libbrotli-dev` + drop expired Yarn apt source; removed `sed` distrust (now handled by `ca-certificates 20250419~deb12u2` from bookworm-security) |
 
 ### Deviations from strict flavor-pinning (approved)
 
 - **ci**: `python:3.12-alpine3.20` was last published 2025-05-08 (Alpine 3.20 EOL). Its latest digest still trusted eMudhra (HTTP 200)
   and shipped vulnerable `brotli-libs-1.1.0-r2`. Moved to Alpine 3.24 (same distro, same Python 3.12 line).
 - **devcontainer**: upstream image is frozen (last built 2025-07-10; `1-3.12-bookworm` resolves to the same digest). The raw base
-  fails the eMudhra test (HTTP 200) and has vulnerable `libbrotli1 1.0.9-2+b6`. The existing `sed` distrust step in the Dockerfile plus the explicit
+  fails the eMudhra test (HTTP 200) and has vulnerable `libbrotli1 1.0.9-2+b6`. The `ca-certificates 20250419~deb12u2` package from bookworm-security (installed at build time) and the explicit
   `libbrotli1` upgrade from bookworm-security fix the built image. The base image's Yarn apt key had expired, which made `apt-get update`
   fail (already broken on `main`), so the Yarn apt source is removed.
 
