@@ -29,6 +29,7 @@ class Config(metaclass=MetaFlaskEnv):
         "image/jpeg": [".jpg", ".jpeg", ".jfif"],
         "image/png": [".png"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+        "application/geo+json": [".geojson"],
     }
     # These MIME/extension mismatches were observed in production uploads.
     # Keep them separate from the normal mappings so unexpected mismatches remain distinguishable.
@@ -37,6 +38,7 @@ class Config(metaclass=MetaFlaskEnv):
         "text/csv": [".log"],
         "image/jpeg": [".png"],
     }
+
     EXTRA_MIME_TYPES = os.getenv("EXTRA_MIME_TYPES", "")
 
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024 + 1024
