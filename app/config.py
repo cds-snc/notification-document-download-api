@@ -34,7 +34,7 @@ class Config(metaclass=MetaFlaskEnv):
     # These MIME/extension mismatches were observed in production uploads.
     # Keep them separate from the normal mappings so unexpected mismatches remain distinguishable.
     MIME_EXTENSION_COMPATIBILITY = {
-        "text/plain": [".json", ".log"],
+        "text/plain": [".json", ".log", ".geojson"],
         "text/csv": [".log"],
         "image/jpeg": [".png"],
     }
