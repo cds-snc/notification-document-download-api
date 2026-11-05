@@ -6,7 +6,6 @@ metadata:
   description: Document download API for GC Notify.
   annotations:
     github.com/project-slug: cds-snc/notification-document-download-api
-    backstage.io/source-location: url:https://github.com/cds-snc/notification-document-download-api/tree/main/
   labels:
     license: MIT
 spec:
