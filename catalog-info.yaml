@@ -2,8 +2,8 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: notification-document-download-api
-  title: Notification Document Download API
-  description: Document download API for GC Notify.
+  title: Document Download API
+  description: Document download API for notification
   annotations:
     github.com/project-slug: cds-snc/notification-document-download-api
   labels:
