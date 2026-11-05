@@ -37,7 +37,7 @@ class Config(metaclass=MetaFlaskEnv):
         "text/plain": [".json", ".log"],
         "text/csv": [".log"],
         "image/jpeg": [".png"],
-        "application/json": [".geojson"]
+        "application/json": [".geojson"],
     }
 
     EXTRA_MIME_TYPES = os.getenv("EXTRA_MIME_TYPES", "")
