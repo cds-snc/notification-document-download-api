@@ -10,6 +10,7 @@ from flask import (
 from notifications_utils.base64_uuid import base64_to_bytes
 
 from app import document_store, scan_files_document_store
+from app.utils.authentication import check_auth
 from app.utils.store import (
     DocumentStoreError,
     MaliciousContentError,
@@ -34,6 +35,8 @@ def download_document(service_id, document_id):
 
     # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
     if sending_method == "template_attach":
+        # template_attach has no key to gate access, so require a bearer token instead
+        check_auth()
         key = None
     else:
         if "key" not in request.args:
@@ -44,7 +47,7 @@ def download_document(service_id, document_id):
             return jsonify(error="Invalid decryption key"), 400
 
         try:
-            check_scan_verdict(service_id, document_id, sending_method)
+            scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
         except MaliciousContentError as e:
             current_app.logger.info(
                 "Malicious content detected, refused to download document: {}".format(e),
@@ -107,6 +110,8 @@ def download_document_b64(service_id, document_id):
 
     # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
     if sending_method == "template_attach":
+        # template_attach has no key to gate access, so require a bearer token instead
+        check_auth()
         key = None
     else:
         if "key" not in request.args:
@@ -117,7 +122,7 @@ def download_document_b64(service_id, document_id):
             abort(404)
 
     try:
-        check_scan_verdict(service_id, document_id, sending_method)
+        scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except MaliciousContentError as e:
         current_app.logger.info(
             "Malicious content detected, refused to download document: {}".format(e),
@@ -176,12 +181,13 @@ def download_document_b64(service_id, document_id):
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>", methods=["DELETE"])
 def delete_document(service_id, document_id):
-    # Accept key and sending_method from either query params or request body
+    # S3 doesn't verify SSE-C keys on delete, so the key can't gate access; require a bearer token for every method
+    check_auth()
+
+    # Accept sending_method from either query params or request body
     if request.is_json:
-        key_str = request.json.get("key")
         sending_method = request.json.get("sending_method", "link")
     else:
-        key_str = request.args.get("key")
         sending_method = request.args.get("sending_method", "link")
 
     current_app.logger.info(
@@ -190,33 +196,13 @@ def delete_document(service_id, document_id):
             "service_id": service_id,
             "document_id": document_id,
             "sending_method": sending_method,
-            "has_key": key_str is not None,
-            "is_json": request.is_json,
-            "query_params": dict(request.args),
         },
     )
-
-    # Key is optional for template_attach (uses SSE-S3), required for others (uses SSE-C)
-    if sending_method == "template_attach":
-        key = None
-        current_app.logger.info("Using SSE-S3 encryption (no key required) for template_attach")
-    else:
-        if not key_str:
-            current_app.logger.warning(
-                f"Missing decryption key in request for sending_method '{sending_method}'. "
-                f"Note: key is only optional for sending_method='template_attach'"
-            )
-            return jsonify(error="Missing decryption key. Key is required for all sending methods except 'template_attach'."), 400
-        try:
-            key = base64_to_bytes(key_str)
-        except ValueError as e:
-            current_app.logger.warning(f"Invalid decryption key format: {e}")
-            return jsonify(error="Invalid decryption key"), 400
 
     try:
         # Delete from both stores
         current_app.logger.info(f"Deleting from document_store with sending_method: {sending_method}")
-        document_store.delete(service_id, document_id, key, sending_method)
+        document_store.delete(service_id, document_id, sending_method)
 
         current_app.logger.info(f"Deleting from scan_files_document_store with sending_method: {sending_method}")
         scan_files_document_store.delete(service_id, document_id, sending_method)
@@ -241,8 +227,9 @@ def delete_document(service_id, document_id):
 
 
 @download_blueprint.route("/services/<uuid:service_id>/documents/<uuid:document_id>/scan-verdict", methods=["POST"])
-def check_scan_verdict(service_id, document_id, sending_method=None):
-    sending_method = request.form.get("sending_method", sending_method)
+def check_scan_verdict(service_id, document_id):
+    check_auth()
+    sending_method = request.form.get("sending_method")
     try:
         av_status = scan_files_document_store.check_scan_verdict(service_id, document_id, sending_method)
     except MaliciousContentError as e:

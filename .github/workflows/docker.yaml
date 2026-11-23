@@ -8,6 +8,11 @@ env:
   AWS_REGION: ca-central-1
   DOCKER_ORG: public.ecr.aws/cds-snc
   DOCKER_SLUG: public.ecr.aws/cds-snc/notify-document-download-api
+  STAGING_ACCOUNT_ID: "239043911459"
+  # temporary CA mitigation
+  NODE_OPTIONS: --use-openssl-ca
+  SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+  SSL_CERT_DIR: /etc/ssl/certs
 
 permissions:
   id-token: write   # This is required for requesting the OIDC JWT
@@ -18,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and push
     steps:
+    - name: Prepare Ubuntu CA trust
+      uses: route06/actions/prepare-ubuntu-ca@aa6b218e4bc5445f54d3649a04297af5e1ce7458 # temporary CA mitigation
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
     - name: Install AWS CLI
       run: |
@@ -41,10 +48,10 @@ jobs:
 
     - name: Build
       run: |
-        docker build --build-arg GIT_SHA=${GITHUB_SHA::7} -t $DOCKER_SLUG:${GITHUB_SHA::7} -t $DOCKER_SLUG:latest -f ci/Dockerfile .
+        docker build --build-arg GIT_SHA=${GITHUB_SHA::7} -t $DOCKER_SLUG:${GITHUB_SHA::7} -f ci/Dockerfile .
     - name: Publish
       run: |
-        docker push $DOCKER_SLUG:latest && docker push $DOCKER_SLUG:${GITHUB_SHA::7}
+        docker push $DOCKER_SLUG:${GITHUB_SHA::7}
 
     - name: Configure credentials to Notify account using OIDC
       uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
@@ -54,7 +61,8 @@ jobs:
         aws-region: "ca-central-1"                      
 
     - name: Set Docker Tag
-      run: echo "DOCKER_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+      id: image-tag
+      run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
       env:
         GITHUB_SHA: ${{ github.sha }}
   
@@ -66,7 +74,7 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.MANIFESTS_WORKFLOW_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/cds-snc/notification-manifests/dispatches \
-          -d '{"event_type":"update-docker-image","client_payload":{"component":"DOCUMENT_DOWNLOAD","docker_tag":"${{ env.DOCKER_TAG }}"}}'
+          -d '{"event_type":"update-docker-image","client_payload":{"component":"DOCUMENT_DOWNLOAD","docker_tag":"${{ steps.image-tag.outputs.tag }}"}}'
 
     - name: my-app-install token
       id: notify-pr-bot
@@ -74,17 +82,31 @@ jobs:
       with:
         app_id: ${{ secrets.NOTIFY_PR_BOT_APP_ID }}
         private_key: ${{ secrets.NOTIFY_PR_BOT_PRIVATE_KEY }}
+        scope: cds-snc
 
-    - uses: cds-snc/notification-pr-bot@main
+    - uses: cds-snc/notification-pr-bot@main # zizmor: ignore[unpinned-uses] First-party bot intentionally tracks main (see renovate.json ignoreDeps) - can't hash-pin without losing that.
       env:
         TOKEN: ${{ steps.notify-pr-bot.outputs.token }}
+
+    - name: Configure AWS credentials for public ECR using OIDC
+      uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+      with:
+        role-to-assume: arn:aws:iam::${{ env.STAGING_ACCOUNT_ID }}:role/notification-document-download-api-apply
+        role-session-name: NotifyDocumentDownloadApiGitHubActions
+        aws-region: "us-east-1"
+
+    - name: Login to public ECR
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@5a88a04c91d5c6f97aae0d9be790e64d9b1d47b7 # v1.7.1
+      with:
+        registry-type: public
 
     - name: Generate docker SBOM
       uses: cds-snc/security-tools/.github/actions/generate-sbom@12a0cdea1c5a515dfcbe353693db804a1793c0ed #v4.0.1
       env:
         TRIVY_DB_REPOSITORY: ${{ vars.TRIVY_DB_REPOSITORY }}
       with:
-        docker_image: "${{ env.DOCKER_SLUG }}:latest"
+        docker_image: "${{ env.DOCKER_SLUG }}:${{ steps.image-tag.outputs.tag }}"
         dockerfile_path: "ci/Dockerfile"
         sbom_name: "notification-document-download-api"
         token: "${{ secrets.GITHUB_TOKEN }}"

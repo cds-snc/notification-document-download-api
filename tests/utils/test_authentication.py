@@ -71,13 +71,15 @@ def test_check_auth_without_auth_token(mocker):
     abort.assert_called_once_with(401, mock.ANY)
 
 
-def test_check_auth_with_invalid_auth_token(mocker):
-    mocker.patch("app.utils.authentication.get_token_from_headers", return_value="invalid")
+def test_check_auth_with_invalid_auth_token(app, mocker):
+    invalid_token = "caller-secret-token"
+    mocker.patch("app.utils.authentication.get_token_from_headers", return_value=invalid_token)
     abort = mocker.patch("app.utils.authentication.abort")
 
     check_auth()
 
-    abort.assert_called_once_with(403, mock.ANY)
+    abort.assert_called_once_with(403, "Forbidden; invalid bearer token provided")
+    assert invalid_token not in abort.call_args.args[1]
 
 
 def test_requires_auth(mocker):
